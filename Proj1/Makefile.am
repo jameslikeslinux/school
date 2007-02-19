@@ -1,1 +1,1 @@
-SUBDIRS = uri
+SUBDIRS = list uri

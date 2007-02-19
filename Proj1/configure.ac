@@ -6,4 +6,4 @@ AC_PROG_CC
 AC_LANG_C
 AC_PROG_LIBTOOL
 
-AC_OUTPUT(Makefile uri/Makefile)
+AC_OUTPUT(Makefile list/Makefile uri/Makefile)

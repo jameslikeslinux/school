@@ -4,6 +4,7 @@
 #include <string.h>
 #include "uri/uri.h"
 
+/* Regex from RFC 2396 */
 #define URI_REGEX "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"
 #define URI_MATCHES 10
 
@@ -36,7 +37,7 @@ uri_t* uri_parse(char *string) {
 
 	size = (int) matches[7].rm_eo - matches[7].rm_so;
 	uri->query = (char*) malloc(size + 1);
-	strncpy(uri->query, string + matches[6].rm_so, size);
+	strncpy(uri->query, string + matches[7].rm_so, size);
 	uri->query[size] = '\0';
 
 	size = (int) matches[9].rm_eo - matches[9].rm_so;

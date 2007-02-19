@@ -9,6 +9,7 @@ typedef struct {
 	int port;
 } server_authority_t;
 
+void server_authority_init(server_authority_t *server_authority);
 int server_authority_parse(server_authority_t *server_authority, char *string);
 void server_authority_free(server_authority_t *server_authority);
 

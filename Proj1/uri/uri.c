@@ -7,6 +7,14 @@
 #define URI_REGEX "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"
 #define URI_MATCHES 10
 
+void uri_init(uri_t *uri) {
+	uri->scheme = NULL;
+	uri->authority = NULL;
+	uri->path = NULL;
+	uri->query = NULL;
+	uri->fragment = NULL;
+}
+
 int uri_parse(uri_t *uri, char *string) {
 	regex_t regex;
 	regmatch_t matches[URI_MATCHES];
@@ -52,4 +60,5 @@ void uri_free(uri_t *uri) {
 	free(uri->path);
 	free(uri->authority);
 	free(uri->scheme);
+	uri_init(uri);
 }

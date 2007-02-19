@@ -6,6 +6,11 @@
 #define SERVER_AUTHORITY_REGEX "(([^?#]*)@)?([^?#:]*)(:([0-9]*))?"
 #define SERVER_AUTHORITY_MATCHES 6
 
+void server_authority_init(server_authority_t *server_authority) {
+	server_authority->userinfo = NULL;
+	server_authority->host = NULL;
+}
+
 int server_authority_parse(server_authority_t *server_authority, char *string) {
 	regex_t regex;
 	regmatch_t matches[SERVER_AUTHORITY_MATCHES];
@@ -45,4 +50,5 @@ int server_authority_parse(server_authority_t *server_authority, char *string) {
 void server_authority_free(server_authority_t *server_authority) {
 	free(server_authority->host);
 	free(server_authority->userinfo);
+	server_authority_init(server_authority);
 }

@@ -16,6 +16,7 @@ typedef struct {
 	char *fragment;
 } http_url_t;
 
+void http_url_init(http_url_t *http_url);
 int http_url_parse(http_url_t *http_url, char *string);
 void http_url_free(http_url_t *http_url);
 

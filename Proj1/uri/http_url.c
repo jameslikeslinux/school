@@ -2,10 +2,21 @@
 #include <string.h>
 #include "uri/http_url.h"
 
+void http_url_init(http_url_t* http_url) {
+	http_url->userinfo = NULL;
+	http_url->host = NULL;
+	http_url->abs_path = NULL;
+	http_url->query = NULL;
+	http_url->fragment = NULL;
+}
+
 int http_url_parse(http_url_t *http_url, char *string) {
 	uri_t uri;
 	server_authority_t server_authority;
 	int ret;
+
+	uri_init(&uri);
+	server_authority_init(&server_authority);
 
 	if ((ret = uri_parse(&uri, string)))
 		return ret;
@@ -58,4 +69,5 @@ void http_url_free(http_url_t *http_url) {
 	free(http_url->abs_path);
 	free(http_url->host);
 	free(http_url->userinfo);
+	http_url_init(http_url);
 }

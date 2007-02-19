@@ -4,6 +4,8 @@
 void print_uri(char *uri_string) {
 	http_url_t http_url;
 
+	http_url_init(&http_url);
+
 	switch (http_url_parse(&http_url, uri_string)) {
 		case INVALID_URI:
 			printf("Invalid URI\n\n");

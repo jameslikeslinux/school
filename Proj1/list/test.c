@@ -11,11 +11,8 @@ int main() {
 	list_insert_end(&list, bar);
 	list_insert_end(&list, baz);
 
-	node = list.head;
-	while (node) {
+	for (node = list.head; node; node = node->next)
 		printf("%s\n", node->data);
-		node = node->next;
-	}
 
 	list_free(&list);
 

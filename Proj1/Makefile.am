@@ -1,1 +1,1 @@
-SUBDIRS = list log uri
+SUBDIRS = list log uri ui

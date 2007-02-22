@@ -1,5 +1,10 @@
+#include <string.h>
 #include <ncurses.h>
 #include <form.h>
+
+#define TITLE "HTTP Client"
+#define AUTHOR "James Lee <jlee23@umbc.edu>"
+#define FIELD_START 5
 
 void create_windows();
 void create_input_form();
@@ -14,7 +19,7 @@ static FORM *url_form;
 static FIELD *url_field[2];
 
 int main() {
-	int logi, ch;
+	int logi, ch, y, x;
 
 	initscr();
 	raw();
@@ -27,10 +32,11 @@ int main() {
 	draw_input();
 	draw_commands();
 
-	form_driver(url_form, REQ_FIRST_FIELD);
-	refresh();
+	form_driver(url_form, ' ');
+	form_driver(url_form, REQ_LEFT_CHAR);
+	form_driver(url_form, REQ_DEL_CHAR);
 
-	while ((ch = getch()) != '')
+	while ((ch = wgetch(input_window)) != '')
 		switch (ch) {
 			case KEY_LEFT:
 				form_driver(url_form, REQ_LEFT_CHAR);
@@ -40,13 +46,26 @@ int main() {
 				form_driver(url_form, REQ_RIGHT_CHAR);
 				break;
 
-			case KEY_BACKSPACE:
+			case 127:
+				getyx(input_window, y, x);
+				if (x == FIELD_START + 1) {
+					form_driver(url_form, REQ_SCR_HBHALF);
+					form_driver(url_form, REQ_END_LINE);
+				}
 				form_driver(url_form, REQ_LEFT_CHAR);
 				form_driver(url_form, REQ_DEL_CHAR);
 				break;
 
 			case KEY_DC:
 				form_driver(url_form, REQ_DEL_CHAR);
+				break;
+
+			case KEY_HOME:
+				form_driver(url_form, REQ_BEG_FIELD);
+				break;
+
+			case KEY_END:
+				form_driver(url_form, REQ_END_FIELD);
 				break;
 
 			default:
@@ -78,24 +97,31 @@ void create_windows() {
 }
 
 void create_input_form() {
-	url_field[0] = new_field(1, input_cols - 7, LINES - 2, 5, 0, 0);
+	keypad(input_window, TRUE);
+
+	url_field[0] = new_field(1, input_cols - (FIELD_START + 1), 0, 0, 0, 0);
 	url_field[1] = NULL;
 
-	set_field_back(url_field[0], A_UNDERLINE);
+	set_field_back(url_field[0], A_REVERSE);
 	field_opts_off(url_field[0], O_AUTOSKIP);
 	field_opts_off(url_field[0], O_STATIC);
 	set_max_field(url_field[0], 255);
 
 	url_form = new_form(url_field);
+	set_form_win(url_form, input_window);
+	set_form_sub(url_form, derwin(input_window, 1, input_cols - (FIELD_START + 1), 1, FIELD_START));
 	post_form(url_form);
 
-	refresh();
+	wrefresh(input_window);
 }
 
 void draw_stdscr() {
+	clear();
+
 	attron(A_BOLD);
-	mvprintw(0, 0, "HTTP Client");
+	mvprintw(0, 0, TITLE);
 	attroff(A_BOLD);
+	mvprintw(0, COLS - strlen(AUTHOR), AUTHOR);
 
 	refresh();
 }

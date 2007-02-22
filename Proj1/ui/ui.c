@@ -1,39 +1,62 @@
 #include <ncurses.h>
+#include <form.h>
 
 void create_windows();
+void create_input_form();
+void draw_stdscr();
 void draw_input();
 void draw_commands();
 void draw_cancel();
 
-static WINDOW *log_window, *progress_window, *command_window;
+static int log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
+static WINDOW *log_window, *input_window, *command_window;
+static FORM *url_form;
+static FIELD *url_field[2];
 
 int main() {
-	int logi;
+	int logi, ch;
 
 	initscr();
-	cbreak();
+	raw();
+	noecho();
+	keypad(stdscr, TRUE);
+
 	create_windows();
-
-	attron(A_BOLD);
-	printw("HTTP Client");
-	attroff(A_BOLD);
-
-	refresh();
-
+	create_input_form();
+	draw_stdscr();
 	draw_input();
 	draw_commands();
 
-	log_window = newwin(LINES - 6, COLS, 2, 0);
+	form_driver(url_form, REQ_FIRST_FIELD);
+	refresh();
 
-	for (logi = 0; logi < 100; logi++) {
-		wattron(log_window, A_BOLD);
-		wprintw(log_window, "12:34:56  ");
-		wattroff(log_window, A_BOLD);
-		wprintw(log_window, "This is a log message %d\n", logi);
-		wrefresh(log_window);
-	}
+	while ((ch = getch()) != '')
+		switch (ch) {
+			case KEY_LEFT:
+				form_driver(url_form, REQ_LEFT_CHAR);
+				break;
 
-	while (mvwgetch(progress_window, 1, 5));
+			case KEY_RIGHT:
+				form_driver(url_form, REQ_RIGHT_CHAR);
+				break;
+
+			case KEY_BACKSPACE:
+				form_driver(url_form, REQ_LEFT_CHAR);
+				form_driver(url_form, REQ_DEL_CHAR);
+				break;
+
+			case KEY_DC:
+				form_driver(url_form, REQ_DEL_CHAR);
+				break;
+
+			default:
+				form_driver(url_form, ch);
+				break;
+		}
+
+	unpost_form(url_form);
+	free_form(url_form);
+	free_field(url_field[0]);
 
 	endwin();
 
@@ -41,20 +64,51 @@ int main() {
 }
 
 void create_windows() {
-	log_window = newwin(LINES - 6, COLS, 2, 0);
-	progress_window = newwin(2, COLS, LINES - 3, 0);
-	command_window = newwin(1, COLS, LINES - 1, 0);
+	log_lines = LINES - 6;
+	log_cols = COLS;
+	log_window = newwin(log_lines, log_cols, 2, 0);
+
+	input_lines = 2;
+	input_cols = COLS;
+	input_window = newwin(input_lines, input_cols, LINES - 3, 0);
+
+	command_lines = 1;
+	command_cols = COLS;
+	command_window = newwin(command_lines, command_cols, LINES - 1, 0);
+}
+
+void create_input_form() {
+	url_field[0] = new_field(1, input_cols - 7, LINES - 2, 5, 0, 0);
+	url_field[1] = NULL;
+
+	set_field_back(url_field[0], A_UNDERLINE);
+	field_opts_off(url_field[0], O_AUTOSKIP);
+	field_opts_off(url_field[0], O_STATIC);
+	set_max_field(url_field[0], 255);
+
+	url_form = new_form(url_field);
+	post_form(url_form);
+
+	refresh();
+}
+
+void draw_stdscr() {
+	attron(A_BOLD);
+	mvprintw(0, 0, "HTTP Client");
+	attroff(A_BOLD);
+
+	refresh();
 }
 
 void draw_input() {
 	int y, x;
 
-	wclear(progress_window);
+	wclear(input_window);
 	
-	wprintw(progress_window, "Enter a URL and choose a method.\n");
-	wprintw(progress_window, "URL: ");
+	wprintw(input_window, "Enter a URL and choose a method.\n");
+	wprintw(input_window, "URL: ");
 
-	wrefresh(progress_window);
+	wrefresh(input_window);
 }
 
 void draw_commands() {
@@ -62,43 +116,32 @@ void draw_commands() {
 
 	wprintw(command_window, "Methods: ");
 	
-	wattron(command_window, A_BOLD | A_REVERSE);
+	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^G");
 	wattroff(command_window, A_BOLD);
-	wprintw(command_window, " GET ");
-	wattroff(command_window, A_REVERSE);
+	wprintw(command_window, " GET   ");
 
-	wprintw(command_window, "  ");
-
-	wattron(command_window, A_BOLD | A_REVERSE);
+	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^H");
 	wattroff(command_window, A_BOLD);
-	wprintw(command_window, " HEAD ");
-	wattroff(command_window, A_REVERSE);
+	wprintw(command_window, " HEAD   ");
 
-	wprintw(command_window, "  ");
-
-	wattron(command_window, A_BOLD | A_REVERSE);
+	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^P");
 	wattroff(command_window, A_BOLD);
 	wprintw(command_window, " POST ");
-	wattroff(command_window, A_REVERSE);
 
 	wprintw(command_window, "   Logger: ");
 
-	wattron(command_window, A_BOLD | A_REVERSE);
+	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^I");
 	wattroff(command_window, A_BOLD);
-	wprintw(command_window, " Info ");
-	wattroff(command_window, A_REVERSE);
+	wprintw(command_window, " Info   ");
 
-	wprintw(command_window, "  ");
-
-	wattron(command_window, A_BOLD | A_REVERSE);
+	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^E");
 	wattroff(command_window, A_BOLD);
 	wprintw(command_window, " Errors ");
-	wattroff(command_window, A_REVERSE);
 
 	wrefresh(command_window);
 }

@@ -46,6 +46,7 @@ int main() {
 				form_driver(url_form, REQ_RIGHT_CHAR);
 				break;
 
+			case KEY_BACKSPACE:
 			case 127:
 				getyx(input_window, y, x);
 				if (x == FIELD_START + 1) {

@@ -22,6 +22,10 @@ void log_message(log_t *log, message_type type, char *source, char *description)
 	list_insert_end(log, message);
 }
 
+void log_perror(log_t *log, char *source) {
+	log_message(log, INFO, source, strerror(errno));
+}
+
 void log_remove(log_t *log, node_t *node) {
 	message_t *message = (message_t*) node->data;
 	free(message->description);

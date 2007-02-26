@@ -19,13 +19,16 @@ int main() {
 	log_t log;
 
 	log_init(&log);
-	log_message(&log, INFO, "main", "this is a test");
-	log_message(&log, ERROR, "connect", "connection refused");
-	log_message(&log, WARNING, "read", "couldn't read");
+	log_message(&log, DETAILS, "main", "this is a test");
+	log_message(&log, INFO, "connect", "connection refused");
+	log_message(&log, INFO, "read", "couldn't read");
 	print_log(&log);
 
 	printf("---clearing log---\n");
 	log_clear(&log);
+	print_log(&log);
+
+	log_perror(&log, "main");
 	print_log(&log);
 
 	return 0;

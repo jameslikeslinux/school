@@ -1,6 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <semaphore.h>
+
 typedef struct node_s {
 	void *data;
 	struct node_s *prev;
@@ -10,6 +12,7 @@ typedef struct node_s {
 typedef struct {
 	node_t *head;
 	node_t *tail;
+	sem_t sem;
 } list_t;
 
 void list_init(list_t *list);

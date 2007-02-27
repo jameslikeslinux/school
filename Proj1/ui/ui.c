@@ -1,42 +1,54 @@
 #include <string.h>
 #include <ncurses.h>
 #include <form.h>
+#include "cdk.h"
 
 #define TITLE "HTTP Client"
 #define AUTHOR "James Lee <jlee23@umbc.edu>"
-#define FIELD_START 5
+#define FIELD_START 6
+#define FIELD_BUF_SIZE 255
 
 void create_windows();
 void create_input_form();
+void select_input_form();
+void delete_input_form();
 void draw_stdscr();
-void draw_input();
+void draw_url_input();
+void draw_post_input();
 void draw_commands();
 void draw_cancel();
 
-static int log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
+static int log_lines, log_cols, input_lines, input_cols, command_lines, command_cols, cancel_showing;
 static WINDOW *log_window, *input_window, *command_window;
+static CDKSCREEN *cdk_screen;
+static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
 
 int main() {
 	int logi, ch, y, x;
+	char *url;
 
 	initscr();
+
+	create_windows();
+
+	cdk_screen = initCDKScreen(log_window);
+	log_swindow = newCDKSwindow(cdk_screen, 0, 0, log_lines, log_cols, "", 255, 0, 0);
+
+	raw();
+	create_input_form();
+	draw_stdscr();
+	draw_url_input();
+	draw_commands();
+
+	select_input_form();
+
 	raw();
 	noecho();
 	keypad(stdscr, TRUE);
 
-	create_windows();
-	create_input_form();
-	draw_stdscr();
-	draw_input();
-	draw_commands();
-
-	form_driver(url_form, ' ');
-	form_driver(url_form, REQ_LEFT_CHAR);
-	form_driver(url_form, REQ_DEL_CHAR);
-
-	while ((ch = wgetch(input_window)) != '')
+	while ((ch = wgetch(input_window)) != '' || cancel_showing)
 		switch (ch) {
 			case KEY_LEFT:
 				form_driver(url_form, REQ_LEFT_CHAR);
@@ -69,24 +81,51 @@ int main() {
 				form_driver(url_form, REQ_END_FIELD);
 				break;
 
+			case KEY_UP:
+			case KEY_DOWN:
+				injectCDKSwindow(log_swindow, ch);
+				break;
+
+			case '':
+				form_driver(url_form, REQ_BEG_FIELD);
+				url = field_buffer(url_field[0], 0);
+				addCDKSwindow(log_swindow, url, BOTTOM);
+				refreshCDKScreen(cdk_screen);
+
+				delete_input_form(); create_input_form();
+				draw_post_input();
+				draw_cancel();
+
+				select_input_form();
+	
+				break;
+
+			case '':
+				delete_input_form(); create_input_form();
+				draw_url_input();
+				draw_commands();
+				
+				select_input_form();
+
+				break;
+
 			default:
 				form_driver(url_form, ch);
 				break;
 		}
 
-	unpost_form(url_form);
-	free_form(url_form);
-	free_field(url_field[0]);
-
+	delete_input_form();
+	destroyCDKSwindow(log_swindow);
+	destroyCDKScreen(cdk_screen);
 	endwin();
 
 	return 0;
 }
 
 void create_windows() {
-	log_lines = LINES - 6;
+	log_lines = LINES - 5;
 	log_cols = COLS;
-	log_window = newwin(log_lines, log_cols, 2, 0);
+	log_window = newwin(log_lines, log_cols, 1, 0);
 
 	input_lines = 2;
 	input_cols = COLS;
@@ -106,7 +145,7 @@ void create_input_form() {
 	set_field_back(url_field[0], A_REVERSE);
 	field_opts_off(url_field[0], O_AUTOSKIP);
 	field_opts_off(url_field[0], O_STATIC);
-	set_max_field(url_field[0], 255);
+	set_max_field(url_field[0], FIELD_BUF_SIZE);
 
 	url_form = new_form(url_field);
 	set_form_win(url_form, input_window);
@@ -114,6 +153,18 @@ void create_input_form() {
 	post_form(url_form);
 
 	wrefresh(input_window);
+}
+
+void select_input_form() {
+	form_driver(url_form, ' ');
+	form_driver(url_form, REQ_LEFT_CHAR);
+	form_driver(url_form, REQ_DEL_CHAR);
+}
+
+void delete_input_form() {
+	unpost_form(url_form);
+	free_form(url_form);
+	free_field(url_field[0]);
 }
 
 void draw_stdscr() {
@@ -127,13 +178,20 @@ void draw_stdscr() {
 	refresh();
 }
 
-void draw_input() {
-	int y, x;
-
+void draw_url_input() {
 	wclear(input_window);
 	
 	wprintw(input_window, "Enter a URL and choose a method.\n");
 	wprintw(input_window, "URL: ");
+
+	wrefresh(input_window);
+}
+
+void draw_post_input() {
+	wclear(input_window);
+	
+	wprintw(input_window, "Enter the data to POST.\n");
+	wprintw(input_window, "POST: ");
 
 	wrefresh(input_window);
 }
@@ -168,11 +226,22 @@ void draw_commands() {
 	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^E");
 	wattroff(command_window, A_BOLD);
-	wprintw(command_window, " Errors ");
+	wprintw(command_window, " Errors");
 
 	wrefresh(command_window);
+
+	cancel_showing = 0;
 }
 
 void draw_cancel() {
 	wclear(command_window);
+
+	wattron(command_window, A_BOLD);
+	wprintw(command_window, "^C");
+	wattroff(command_window, A_BOLD);
+	wprintw(command_window, " Cancel");
+
+	wrefresh(command_window);
+
+	cancel_showing = 1;
 }

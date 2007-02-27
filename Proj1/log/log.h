@@ -3,7 +3,7 @@
 
 #include <time.h>
 #include <errno.h>
-#include "list/list.h"
+#include "list.h"
 
 typedef enum { INFO, DETAILS } message_type;
 

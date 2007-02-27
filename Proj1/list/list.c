@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "list/list.h"
+#include "list.h"
 
 void list_init(list_t *list) {
 	list->head = NULL;

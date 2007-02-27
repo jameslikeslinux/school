@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "log/log.h"
+#include "log.h"
 
 void log_init(log_t *log) {
 	list_init(log);

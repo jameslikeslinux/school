@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "uri/http_url.h"
+#include "http_url.h"
 
 void http_url_init(http_url_t* http_url) {
 	http_url->userinfo = NULL;

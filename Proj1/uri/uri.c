@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <string.h>
-#include "uri/uri.h"
+#include "uri.h"
 
 /* Regex from RFC 2396 */
 #define URI_REGEX "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"

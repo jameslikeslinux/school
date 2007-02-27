@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "list/list.h"
+#include "list.h"
 
 int main() {
 	char *foo = "foo", *bar = "bar", *baz = "baz";

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "log/log.h"
+#include "log.h"
 
 void print_log(log_t *log) {
 	node_t *node;

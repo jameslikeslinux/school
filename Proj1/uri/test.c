@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "uri/http_url.h"
+#include "http_url.h"
 
 void print_uri(char *uri_string) {
 	http_url_t http_url;

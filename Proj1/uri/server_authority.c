@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <string.h>
-#include "uri/server_authority.h"
+#include "server_authority.h"
 
 #define SERVER_AUTHORITY_REGEX "(([^?#]*)@)?([^?#:]*)(:([0-9]*))?"
 #define SERVER_AUTHORITY_MATCHES 6

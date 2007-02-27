@@ -1,8 +1,8 @@
 #ifndef HTTP_URL_H
 #define HTTP_URL_H
 
-#include "uri/uri.h"
-#include "uri/server_authority.h"
+#include "uri.h"
+#include "server_authority.h"
 
 #define INVALID_SCHEME 3
 #define INVALID_PORT 4

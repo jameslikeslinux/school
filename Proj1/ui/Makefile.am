@@ -1,3 +1,5 @@
 noinst_PROGRAMS = ui
 ui_SOURCES = ui.c
-ui_LDADD = -lncurses -lform
+ui_LDADD = ../cdk/libcdk.a -lncurses -lform
+
+INCLUDES = -I../cdk/include

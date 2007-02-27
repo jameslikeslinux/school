@@ -14,10 +14,14 @@ typedef struct {
 	char *description;
 } message_t;
 
-typedef list_t log_t;
+typedef struct {
+	list_t messages;
+	void (*message_callback)();
+} log_t;
 
 void log_init(log_t *log);
 void log_message(log_t *log, message_type type, char *source, char *description);
+void log_register_message_callback(log_t *log, void (*message_callback)());
 void log_perror(log_t *log, char *source);
 void log_remove(log_t *log, node_t *message);
 void log_clear(log_t *log);

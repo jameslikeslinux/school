@@ -3,7 +3,8 @@
 #include "log.h"
 
 void log_init(log_t *log) {
-	list_init(log);
+	list_init(&log->messages);
+	log->message_callback = NULL;
 }
 
 void log_message(log_t *log, message_type type, char *source, char *description) {
@@ -19,7 +20,14 @@ void log_message(log_t *log, message_type type, char *source, char *description)
 	message->description = (char*) malloc(strlen(description) + 1);
 	strcpy(message->description, description);
 
-	list_insert_end(log, message);
+	list_insert_end(&log->messages, message);
+
+	if (log->message_callback)
+		log->message_callback();
+}
+
+void log_register_message_callback(log_t *log, void (*message_callback)()) {
+	log->message_callback = message_callback;
 }
 
 void log_perror(log_t *log, char *source) {
@@ -31,12 +39,12 @@ void log_remove(log_t *log, node_t *node) {
 	free(message->description);
 	free(message->source);
 	free(message);
-	list_remove(log, node);
+	list_remove(&log->messages, node);
 }
 
 void log_clear(log_t *log) {
 	node_t *node;
-	for (node = log->head; node; node = node->next)
+	for (node = log->messages.head; node; node = node->next)
 		log_remove(log, node);
 }
 

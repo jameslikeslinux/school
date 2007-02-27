@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <form.h>
 #include "cdk.h"
+#include "log.h"
 
 #define TITLE "HTTP Client"
 #define AUTHOR "James Lee <jlee23@umbc.edu>"
@@ -17,7 +18,9 @@ void draw_url_input();
 void draw_post_input();
 void draw_commands();
 void draw_cancel();
+void message_logged();
 
+static log_t log;
 static int log_lines, log_cols, input_lines, input_cols, command_lines, command_cols, cancel_showing;
 static WINDOW *log_window, *input_window, *command_window;
 static CDKSCREEN *cdk_screen;
@@ -28,6 +31,9 @@ static FIELD *url_field[2];
 int main() {
 	int logi, ch, y, x;
 	char *url;
+
+	log_init(&log);
+	log_register_message_callback(&log, message_logged);
 
 	initscr();
 
@@ -89,8 +95,7 @@ int main() {
 			case '':
 				form_driver(url_form, REQ_BEG_FIELD);
 				url = field_buffer(url_field[0], 0);
-				addCDKSwindow(log_swindow, url, BOTTOM);
-				refreshCDKScreen(cdk_screen);
+				log_message(&log, INFO, "ui", url);
 
 				delete_input_form(); create_input_form();
 				draw_post_input();
@@ -123,7 +128,7 @@ int main() {
 }
 
 void create_windows() {
-	log_lines = LINES - 5;
+	log_lines = LINES - 4;
 	log_cols = COLS;
 	log_window = newwin(log_lines, log_cols, 1, 0);
 
@@ -244,4 +249,17 @@ void draw_cancel() {
 	wrefresh(command_window);
 
 	cancel_showing = 1;
+}
+
+void message_logged() {
+	message_t *message;
+	char time[12], line[255];
+
+	message = (message_t*) log.messages.tail->data;
+
+	strftime(time, 12, "%X", localtime(&message->time));
+	snprintf(line, 255, "</B>%s<!B>  %s: %s", time, message->source, message->description);
+
+	addCDKSwindow(log_swindow, line, BOTTOM);
+	refreshCDKScreen(cdk_screen);
 }

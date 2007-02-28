@@ -3,6 +3,8 @@
 #include <form.h>
 #include "cdk.h"
 #include "http.h"
+#include "http_run.h"
+#include "ui.h"
 
 #define TITLE "HTTP Client"
 #define AUTHOR "James Lee <jlee23@umbc.edu>"
@@ -17,14 +19,7 @@
 
 void create_windows();
 void create_input_form();
-void select_input_form();
 void delete_input_form();
-void draw_stdscr();
-void draw_url_input();
-void draw_method_selection();
-void draw_post_input();
-void draw_commands();
-void draw_cancel();
 void set_input_action(int action);
 void message_logged();
 void trim(char *string);
@@ -37,6 +32,7 @@ static CDKSCREEN *cdk_screen;
 static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
+static pthread_t http_thread;
 
 int main() {
 	int logi, ch, y, x;
@@ -102,8 +98,8 @@ int main() {
 			http_url_init(&http_url);
 			if (http_url_parse(&http_url, url))
 				return;
-			http_init(&http, &http_url, &log);
-			http_go(&http, GET, NULL, 0, 3);
+			http_init(&http, &http_url, GET, NULL, 0, 3, &log);
+			pthread_create(&http_thread, NULL, http_run, &http);
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {
 			log_printf(&log, INFO, "ui", "HEAD %s", url);
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {

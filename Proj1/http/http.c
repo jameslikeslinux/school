@@ -5,49 +5,20 @@
 #include <arpa/inet.h>
 #include "http.h"
 
-#define RETRY_SLEEP 5
+#define HOST_HEADER "Host: "
+#define CONTENT_LENGTH_HEADER "Content-Length: "
 
 static char *http_method_strings[] = {"GET", "HEAD", "POST"};
 
-void http_init(http_t *http, http_url_t *url, log_t *log) {
+void http_init(http_t *http, http_url_t *url, http_method method, void *post_data, size_t post_data_size, int num_retry, log_t *log) {
 	http->status = DISCONNECTED;
 	http->url = url;
+	http->method = method;
+	http->post_data = post_data;
+	http->post_data_size = post_data_size;
+	http->num_retry = num_retry;
 	http->log = log;
 	http->sockfd = -1;
-}
-
-int http_go(http_t *http, http_method method, void *post_data, size_t post_data_size, int num_retry) {
-	int ret, connect_try, request_try, disconnect_try;
-
-	connect_try = 0;
-	request_try = 0;
-
-CONNECT:
-	connect_try++;
-	ret = http_connect(http);
-
-	if (ret == FAIL || connect_try >= num_retry)
-		return FAIL;
-	else if (ret == RETRY) {
-		log_printf(http->log, INFO, "http_go", "Retrying http_connect %d of %d times in %d seconds...", connect_try, num_retry, RETRY_SLEEP);
-		sleep(5);
-		goto CONNECT;
-	}
-
-SEND_REQUEST:
-	request_try++;
-	ret = http_send_request(http, method, post_data, post_data_size);
-
-	if (ret == FAIL || request_try >= num_retry)
-		return FAIL;
-	else if (ret == RETRY) {
-		http_disconnect(http);
-		log_printf(http->log, INFO, "http_go", "Retrying http_send_request %d of %d times in %d seconds...", request_try, num_retry, RETRY_SLEEP);
-		sleep(5);
-		goto CONNECT;
-	}
-
-	return http_disconnect(http);
 }
 
 int http_connect(http_t *http) {
@@ -102,10 +73,29 @@ int http_connect(http_t *http) {
 	return SUCCESS;
 }
 
-int http_send_request(http_t *http, http_method method, void *post_data, size_t post_data_size) {
+int http_send(http_t *http, void *data, size_t size) {
+	int sent, pos;
+
+	if (http->status == DISCONNECTED) {
+		log_printf(http->log, INFO, "http_send", "Disconnected");
+		return FAIL;
+	}
+
+	for (pos = 0; pos < size; pos += sent) {
+		log_printf(http->log, DETAILS, "http_send", "Calling send");
+		if ((sent = send(http->sockfd, data + pos, size - pos, 0)) == -1) {
+			log_perror(http->log, "send");
+			return RETRY;
+		}
+	}
+
+	return SUCCESS;
+}
+
+int http_send_request(http_t *http) {
 	struct timeval starttime, endtime;
 	char *request_line;
-	int sent, pos;
+	int ret;
 
 	if (http->status == DISCONNECTED) {
 		log_printf(http->log, INFO, "http_send_request", "Disconnected");
@@ -117,18 +107,28 @@ int http_send_request(http_t *http, http_method method, void *post_data, size_t 
 	
 	gettimeofday(&starttime, NULL);
 
-	log_printf(http->log, DETAILS, "http_send_request", "Sending %s request...", http_method_strings[method]);
+	log_printf(http->log, DETAILS, "http_send_request", "Sending %s request...", http_method_strings[http->method]);
 
-	request_line = (char*) malloc(strlen(http->url->abs_path) + strlen(http->url->query) + 17);
-	sprintf(request_line, "%s %s?%s HTTP/1.0\r\n", http_method_strings[method], http->url->abs_path, http->url->query);
+	request_line = (char*) malloc(strlen(http->url->abs_path) + strlen(http->url->query) + 18);
+	sprintf(request_line, "%s %s?%s HTTP/1.0\r\n", http_method_strings[http->method], http->url->abs_path, http->url->query);
+	if (ret = http_send(http, request_line, strlen(request_line))) return ret;
+	free(request_line);
 
-	for (pos = 0; pos < strlen(request_line); pos += sent) {
-		log_printf(http->log, DETAILS, "http_send_request", "Calling send");
-		if ((sent = send(http->sockfd, request_line + pos, strlen(request_line + pos), 0)) == -1) {
-			log_perror(http->log, "send");
-			return RETRY;
-		}
+	request_line = (char*) malloc(strlen(HOST_HEADER) + strlen(http->url->host) + 3);
+	sprintf(request_line, "%s%s\r\n", HOST_HEADER, http->url->host);
+	if (ret = http_send(http, request_line, strlen(request_line))) return ret;
+	free(request_line);
+
+	if (http->method == POST) {
+		request_line = (char*) malloc(strlen(CONTENT_LENGTH_HEADER) + 15);
+		sprintf(request_line, "%s%d\r\n\r\n", CONTENT_LENGTH_HEADER, http->post_data_size);
+		if (ret = http_send(http, request_line, strlen(request_line))) return ret;
+		free(request_line);
+
+		if (ret = http_send(http, http->post_data, http->post_data_size)) return ret;
 	}
+	
+	http_send(http, "\r\n", 2);
 
 	gettimeofday(&endtime, NULL);
 	log_printf(http->log, DETAILS, "http_send_request", "Request sent in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);

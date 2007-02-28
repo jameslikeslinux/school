@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include <form.h>
 #include "cdk.h"
-#include "log.h"
+#include "http.h"
 
 #define TITLE "HTTP Client"
 #define AUTHOR "James Lee <jlee23@umbc.edu>"
@@ -27,6 +27,7 @@ void draw_commands();
 void draw_cancel();
 void set_input_action(int action);
 void message_logged();
+void trim(char *string);
 
 static log_t log;
 static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
@@ -39,7 +40,8 @@ static FIELD *url_field[2];
 
 int main() {
 	int logi, ch, y, x;
-	char message[255];
+	http_t http;
+	http_url_t http_url;
 
 	log_init(&log);
 	log_register_message_callback(&log, message_logged);
@@ -87,28 +89,36 @@ int main() {
 		else if (ch == '')
 			cleanCDKSwindow(log_swindow);
 		else if (ch == '\n' && current_action & URL_INPUTTING) {
+			form_driver(url_form, REQ_END_FIELD);
+			form_driver(url_form, 'a');
 			form_driver(url_form, REQ_BEG_FIELD);
 			strcpy(url, field_buffer(url_field[0], 0));
+			*strrchr(url, 'a') = '\0';
 
 			draw_method_selection();
 			draw_cancel();
 		} else if (tolower(ch) == 'g' && current_action & METHOD_SELECTING) {
-			snprintf(message, 255, "GET %s", url);
-			log_message(&log, INFO, "ui", message);
+			/* log_printf(&log, INFO, "ui", "GET %s", url); */
+			http_url_init(&http_url);
+			if (http_url_parse(&http_url, url))
+				return;
+			http_init(&http, GET, &http_url, NULL, 0, &log);
+			http_connect(&http);
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {
-			snprintf(message, 255, "HEAD %s", url);
-			log_message(&log, INFO, "ui", message);
+			log_printf(&log, INFO, "ui", "HEAD %s", url);
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {
 			draw_post_input();
 			draw_cancel();
 			select_input_form();
 		} else if (ch == '\n' && current_action & POST_INPUTTING) {
+			form_driver(url_form, REQ_END_FIELD);
+			form_driver(url_form, 'a');
 			form_driver(url_form, REQ_BEG_FIELD);
 			strcpy(post, field_buffer(url_field[0], 0));
+			*strrchr(url, 'a') = '\0';
 			
-			snprintf(message, 255, "POST %s", url);
-			log_message(&log, INFO, "ui", message);
-			log_message(&log, INFO, "ui", post);
+			log_printf(&log, INFO, "ui", "POST %s", url);
+			log_printf(&log, INFO, "ui", "%s", post);
 		} else if (ch == '') {
 			draw_url_input();
 			draw_commands();

@@ -1,1 +1,1 @@
-SUBDIRS = cdk list log uri ui
+SUBDIRS = cdk list log uri http ui

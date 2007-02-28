@@ -26,6 +26,7 @@ void log_init(log_t *log);
 void log_message(log_t *log, message_type type, char *source, char *description);
 void log_register_message_callback(log_t *log, void (*message_callback)());
 void log_perror(log_t *log, char *source);
+void log_herror(log_t *log, char *source);
 void log_printf(log_t *log, message_type type, char *source, char *format, ...);
 void log_remove(log_t *log, node_t *message);
 void log_clear(log_t *log);

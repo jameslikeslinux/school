@@ -35,6 +35,10 @@ void log_perror(log_t *log, char *source) {
 	log_message(log, INFO, source, strerror(errno));
 }
 
+void log_herror(log_t *log, char *source) {
+	log_message(log, INFO, source, hstrerror(h_errno));
+}
+
 void log_printf(log_t *log, message_type type, char *source, char *format, ...) {
 	char description[255];
 	va_list args;

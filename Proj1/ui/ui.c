@@ -102,8 +102,8 @@ int main() {
 			http_url_init(&http_url);
 			if (http_url_parse(&http_url, url))
 				return;
-			http_init(&http, GET, &http_url, NULL, 0, &log);
-			http_connect(&http);
+			http_init(&http, &http_url, &log);
+			http_go(&http, GET, NULL, 0, 3);
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {
 			log_printf(&log, INFO, "ui", "HEAD %s", url);
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {

@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/time.h>
 #include <arpa/inet.h>
 #include "http.h"
+#include "base64.h"
+#include "timeval.h"
 
 #define RETRY_SLEEP 5
 #define HOST_HEADER "Host: "
+#define AUTHORIZATION_HEADER "Authorization: Basic "
 #define CONTENT_LENGTH_HEADER "Content-Length: "
 
 static char *http_method_strings[] = {"GET", "HEAD", "POST"};
@@ -117,7 +119,7 @@ int http_connect(http_t *http) {
 	}
 
 	gettimeofday(&endtime, NULL);
-	log_printf(http->log, DETAILS, "http_connect", "Connected in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);
+	log_printf(http->log, DETAILS, "http_connect", "Connected in %d ms.", timeval_subtract(&endtime, &starttime));
 
 	http->status = CONNECTED;
 
@@ -172,6 +174,17 @@ int http_send_request(http_t *http) {
 	free(request_line);
 	if (ret) return ret;
 
+	if (strlen(http->url->userinfo) > 0) {
+		char *base64 = vlc_b64_encode(http->url->userinfo);
+		request_line = (char*) malloc(strlen(AUTHORIZATION_HEADER) + strlen(base64) + 3);
+		sprintf(request_line, "%s%s\r\n", AUTHORIZATION_HEADER, base64);
+		free(base64);
+		log_printf(http->log, INFO, "test", "%s", request_line);
+		ret = http_send(http, request_line, strlen(request_line));
+		free(request_line);
+		if (ret) return ret;
+	}
+
 	if (http->method == POST) {
 		request_line = (char*) malloc(strlen(CONTENT_LENGTH_HEADER) + 15);
 		sprintf(request_line, "%s%d\r\n\r\n", CONTENT_LENGTH_HEADER, http->post_data_size);
@@ -185,7 +198,7 @@ int http_send_request(http_t *http) {
 	http_send(http, "\r\n", 2);
 
 	gettimeofday(&endtime, NULL);
-	log_printf(http->log, DETAILS, "http_send_request", "Request sent in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);
+	log_printf(http->log, DETAILS, "http_send_request", "Request sent in %d ms.", timeval_subtract(&endtime, &starttime));
 
 	http->status = REQUEST_SENT;
 
@@ -270,7 +283,7 @@ int http_recv_header(http_t *http) {
 	}
 
 	gettimeofday(&endtime, NULL);
-	log_printf(http->log, DETAILS, "http_recv_header", "Header received in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);
+	log_printf(http->log, DETAILS, "http_recv_header", "Header received in %d ms.", timeval_subtract(&endtime, &starttime));
 
 	http->status = HEADER_RECEIVED;
 
@@ -302,7 +315,7 @@ int http_disconnect(http_t *http) {
 	}
 
 	gettimeofday(&endtime, NULL);
-	log_printf(http->log, DETAILS, "http_disconnect", "Disconnected in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);
+	log_printf(http->log, DETAILS, "http_disconnect", "Disconnected in %d ms.", timeval_subtract(&endtime, &starttime));
 
 	http->status = DISCONNECTED;
 

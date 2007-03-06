@@ -3,8 +3,6 @@
 #include <form.h>
 #include "cdk.h"
 #include "http.h"
-#include "http_run.h"
-#include "ui.h"
 
 #define TITLE "HTTP Client"
 #define AUTHOR "James Lee <jlee23@umbc.edu>"
@@ -20,9 +18,16 @@
 void create_windows();
 void create_input_form();
 void delete_input_form();
+void draw_stdscr();
+void draw_url_input();
+void draw_method_selection();
+void draw_post_input();
+void draw_commands();
+void draw_cancel();
 void set_input_action(int action);
+void select_input_form();
 void message_logged();
-void trim(char *string);
+void http_run_thread(void *http_t_as_void);
 
 static log_t log;
 static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
@@ -99,7 +104,7 @@ int main() {
 			if (http_url_parse(&http_url, url))
 				return;
 			http_init(&http, &http_url, GET, NULL, 0, 3, &log);
-			pthread_create(&http_thread, NULL, http_run, &http);
+			pthread_create(&http_thread, NULL, http_run_thread, &http);
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {
 			log_printf(&log, INFO, "ui", "HEAD %s", url);
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {
@@ -295,4 +300,15 @@ void message_logged() {
 
 	addCDKSwindow(log_swindow, line, BOTTOM);
 	refreshCDKScreen(cdk_screen);
+}
+
+void http_run_thread(void *http_t_as_void) {
+	http_t *http = (http_t*) http_t_as_void;
+
+	http_run(http);
+	http_disconnect(http);
+
+	draw_commands();
+	draw_url_input();
+	select_input_form();
 }

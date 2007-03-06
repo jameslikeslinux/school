@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include "list.h"
 
-typedef enum { INFO, DETAILS } message_type;
+typedef enum { NOTHING, INFO, DETAILS } message_type;
 
 typedef struct {
 	time_t time;

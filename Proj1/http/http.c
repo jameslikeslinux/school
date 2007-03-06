@@ -85,7 +85,7 @@ int http_connect(http_t *http) {
 
 	gettimeofday(&starttime, NULL);
 
-	log_printf(http->log, DETAILS, "http_connect", "Connecting to %s:%d...", http->url->host, http->url->port);
+	log_printf(http->log, INFO, "http_connect", "Connecting to %s:%d...", http->url->host, http->url->port);
 
 	log_printf(http->log, DETAILS, "http_connect", "Calling gethostbyname");
 	if (!(he = gethostbyname(http->url->host))) {
@@ -158,7 +158,7 @@ int http_send_request(http_t *http) {
 	
 	gettimeofday(&starttime, NULL);
 
-	log_printf(http->log, DETAILS, "http_send_request", "Sending %s request...", http_method_strings[http->method]);
+	log_printf(http->log, INFO, "http_send_request", "Sending %s request...", http_method_strings[http->method]);
 
 	request_line = (char*) malloc(strlen(http->url->abs_path) + strlen(http->url->query) + 18);
 	sprintf(request_line, "%s %s?%s HTTP/1.0\r\n", http_method_strings[http->method], http->url->abs_path, http->url->query);
@@ -224,7 +224,7 @@ int http_recv_header(http_t *http) {
 	
 	gettimeofday(&starttime, NULL);
 
-	log_printf(http->log, DETAILS, "http_recv_header", "Receiving HTTP response header...");
+	log_printf(http->log, INFO, "http_recv_header", "Receiving HTTP response header...");
 
 	size = 1024;
 	buf = (char*) malloc(size);
@@ -287,7 +287,7 @@ int http_disconnect(http_t *http) {
 	
 	gettimeofday(&starttime, NULL);
 
-	log_printf(http->log, DETAILS, "http_disconnect", "Disconnecting...");
+	log_printf(http->log, INFO, "http_disconnect", "Disconnecting...");
 
 	log_printf(http->log, DETAILS, "http_disconnect", "Calling close");
 	if (close(http->sockfd)) {
@@ -296,8 +296,10 @@ int http_disconnect(http_t *http) {
 	}
 	http->sockfd = -1;
 
-	if (http->header)
+	if (http->header) {
 		free(http->header);
+		http->header = NULL;
+	}
 
 	gettimeofday(&endtime, NULL);
 	log_printf(http->log, DETAILS, "http_disconnect", "Disconnected in %d ms.", endtime.tv_usec / 1000 - starttime.tv_usec / 1000);

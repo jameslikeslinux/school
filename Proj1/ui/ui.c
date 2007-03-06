@@ -27,9 +27,11 @@ void draw_cancel();
 void set_input_action(int action);
 void select_input_form();
 void message_logged();
+void change_display_log_type(message_type type);
 void http_run_thread(void *http_t_as_void);
 
 static log_t log;
+static message_type display_log_type;
 static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
 static char url[FIELD_BUF_SIZE], post[FIELD_BUF_SIZE];
 static WINDOW *log_window, *input_window, *command_window;
@@ -44,6 +46,7 @@ int main() {
 	http_t http;
 	http_url_t http_url;
 
+	display_log_type = INFO;
 	log_init(&log);
 	log_register_message_callback(&log, message_logged);
 
@@ -89,6 +92,10 @@ int main() {
 			injectCDKSwindow(log_swindow, ch);
 		else if (ch == '')
 			cleanCDKSwindow(log_swindow);
+		else if (ch == '	')
+			change_display_log_type(INFO);
+		else if (ch == '')
+			change_display_log_type(DETAILS);
 		else if (ch == '\n' && current_action & URL_INPUTTING) {
 			form_driver(url_form, REQ_END_FIELD);
 			form_driver(url_form, 'a');
@@ -99,7 +106,6 @@ int main() {
 			draw_method_selection();
 			draw_cancel();
 		} else if (tolower(ch) == 'g' && current_action & METHOD_SELECTING) {
-			/* log_printf(&log, INFO, "ui", "GET %s", url); */
 			http_url_init(&http_url);
 			if (http_url_parse(&http_url, url))
 				return;
@@ -255,9 +261,9 @@ void draw_commands() {
 	wprintw(command_window, " Info  ");
 
 	wattron(command_window, A_BOLD);
-	wprintw(command_window, "^E");
+	wprintw(command_window, "^D");
 	wattroff(command_window, A_BOLD);
-	wprintw(command_window, " Errors  ");
+	wprintw(command_window, " Details  ");
 
 	wattron(command_window, A_BOLD);
 	wprintw(command_window, "^C");
@@ -295,11 +301,35 @@ void message_logged() {
 
 	message = (message_t*) log.messages.tail->data;
 
-	strftime(time, 12, "%X", localtime(&message->time));
-	snprintf(line, 255, "</B>%s<!B>  %s: %s", time, message->source, message->description);
+	if (message->type <= display_log_type) {
+		strftime(time, 12, "%X", localtime(&message->time));
+		snprintf(line, 255, "</B>%s<!B>  %s: %s", time, message->source, message->description);
+		addCDKSwindow(log_swindow, line, BOTTOM);
+	}
+}
 
-	addCDKSwindow(log_swindow, line, BOTTOM);
-	refreshCDKScreen(cdk_screen);
+void change_display_log_type(message_type type) {
+	node_t *node;
+	message_t *message;
+	char time[12], line[255];
+
+	if (type == display_log_type)
+		return;
+	
+	display_log_type = NOTHING;
+
+	cleanCDKSwindow(log_swindow);
+	for (node = log.messages.head; node; node = node->next) {
+		message = (message_t*) node->data;
+		
+		if (message->type <= type) {
+			strftime(time, 12, "%X", localtime(&message->time));
+			snprintf(line, 255, "</B>%s<!B>  %s: %s", time, message->source, message->description);
+			addCDKSwindow(log_swindow, line, BOTTOM);
+		}
+	}
+
+	display_log_type = type;
 }
 
 void http_run_thread(void *http_t_as_void) {

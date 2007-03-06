@@ -97,18 +97,42 @@ int main() {
 		else if (ch == '')
 			change_display_log_type(DETAILS);
 		else if (ch == '\n' && current_action & URL_INPUTTING) {
+			int ret;
+
 			form_driver(url_form, REQ_END_FIELD);
 			form_driver(url_form, 'a');
 			form_driver(url_form, REQ_BEG_FIELD);
 			strcpy(url, field_buffer(url_field[0], 0));
 			*strrchr(url, 'a') = '\0';
 
-			draw_method_selection();
-			draw_cancel();
-		} else if (tolower(ch) == 'g' && current_action & METHOD_SELECTING) {
 			http_url_init(&http_url);
-			if (http_url_parse(&http_url, url))
-				return;
+			if (ret = http_url_parse(&http_url, url)) {
+				char *message;
+
+				switch (ret) {
+					case INVALID_SERVER_AUTHORITY:
+						message = "Invalid server authority";
+						break;
+					case INVALID_SCHEME:
+						message = "Invalid scheme";
+						break;
+					case INVALID_PORT:
+						message = "Invalid port";
+						break;
+					default:
+						message = "Invalid URI";
+						break;
+				}
+
+				log_printf(&log, INFO, "http_url_parse", "%s", message);
+
+				draw_url_input();
+				draw_commands();
+			} else {
+				draw_method_selection();
+				draw_cancel();
+			}
+		} else if (tolower(ch) == 'g' && current_action & METHOD_SELECTING) {
 			http_init(&http, &http_url, GET, NULL, 0, 3, &log);
 			pthread_create(&http_thread, NULL, http_run_thread, &http);
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {

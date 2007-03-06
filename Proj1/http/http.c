@@ -75,7 +75,7 @@ RECV_HEADER:
 }
 
 int http_connect(http_t *http) {
-	struct timeval starttime, endtime;
+	struct timeval starttime, endtime, timeout;
 	struct hostent *he;
 	struct sockaddr_in addr;
 	char *ip;
@@ -106,6 +106,11 @@ int http_connect(http_t *http) {
 		log_perror(http->log, "socket");
 		return FAIL;
 	}
+
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
+	setsockopt(http->sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval));
+	setsockopt(http->sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval));
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(http->url->port);

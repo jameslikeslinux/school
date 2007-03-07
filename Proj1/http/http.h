@@ -28,6 +28,7 @@ void http_run(http_t *http);
 int http_connect(http_t *http);
 int http_send_request(http_t *http);
 int http_recv_header(http_t *http);
+int http_parse_header(http_t *http);
 int http_disconnect(http_t *http);
 
 #endif

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <regex.h>
 #include "http.h"
 #include "base64.h"
 #include "timeval.h"
@@ -10,6 +11,8 @@
 #define HOST_HEADER "Host: "
 #define AUTHORIZATION_HEADER "Authorization: Basic "
 #define CONTENT_LENGTH_HEADER "Content-Length: "
+#define RESPONSE_STATUS_REGEX "^HTTP/(1\\.0|1\\.1) ([0-9]{3}) (.*)\r$"
+#define RESPONSE_STATUS_MATCHES 4
 
 static char *http_method_strings[] = {"GET", "HEAD", "POST"};
 
@@ -184,7 +187,6 @@ int http_send_request(http_t *http) {
 		request_line = (char*) malloc(strlen(AUTHORIZATION_HEADER) + strlen(base64) + 3);
 		sprintf(request_line, "%s%s\r\n", AUTHORIZATION_HEADER, base64);
 		free(base64);
-		log_printf(http->log, INFO, "test", "%s", request_line);
 		ret = http_send(http, request_line, strlen(request_line));
 		free(request_line);
 		if (ret) return ret;
@@ -281,18 +283,102 @@ int http_recv_header(http_t *http) {
 
 	free(buf);
 
-	buf = strtok(http->header, "\r\n");
-	while (buf != NULL) {
-		log_printf(http->log, DETAILS, "http_recv_header", "%s", buf);
-		buf = strtok(NULL, "\r\n");
-	}
-
 	gettimeofday(&endtime, NULL);
 	log_printf(http->log, DETAILS, "http_recv_header", "Header received in %d ms.", timeval_subtract(&endtime, &starttime));
 
 	http->status = HEADER_RECEIVED;
 
-	return SUCCESS;
+	return http_parse_header(http);
+}
+
+int http_parse_header(http_t *http) {
+	regex_t regex;
+	regmatch_t matches[RESPONSE_STATUS_MATCHES];
+	int ret, size, code;
+	char *codestr, *message, *buf;
+
+	if (http->status < HEADER_RECEIVED) {
+		log_printf(http->log, INFO, "http_parse_header", "Header not received");
+		return FAIL;
+	}
+
+	regcomp(&regex, RESPONSE_STATUS_REGEX, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+	ret = regexec(&regex, http->header, RESPONSE_STATUS_MATCHES, matches, 0);
+	regfree(&regex);
+	if (ret) {
+		log_printf(http->log, INFO, "http_parse_header", "Invalid response header");
+		return FAIL;
+	}
+
+	size = (int) matches[2].rm_eo - matches[2].rm_so;
+	codestr = (char*) malloc(size + 1);
+	strncpy(codestr, http->header + matches[2].rm_so, size);
+	codestr[size] = '\0';
+	code = atoi(codestr);
+	free(codestr);
+
+	size = (int) matches[3].rm_eo - matches[3].rm_so;
+	message = (char*) malloc(size + 1);
+	strncpy(message, http->header + matches[3].rm_so, size);
+	message[size] = '\0';
+
+	switch (code) {
+		case 200:	/* OK */
+		case 201:	/* Created */
+		case 202:	/* Accepted */
+		case 204:	/* No Content */
+			log_printf(http->log, INFO, "http_parse_header", "Successful (%d %s)", code, message);
+			ret = SUCCESS;
+			break;
+
+		case 300:	/* Multiple Choices */
+		case 301:	/* Moved Permanently */
+		case 304:	/* Not Modified */
+			log_printf(http->log, INFO, "http_parse_header", "Redirection (%d %s)", code, message);
+			ret = FAIL;
+			break;
+
+		case 302:	/* Moved Temporarily */
+			log_printf(http->log, INFO, "http_parse_header", "Redirection (%d %s)", code, message);
+			ret = RETRY;
+			break;
+
+		case 400:	/* Bad Request */
+		case 401:	/* Unauthorized */
+		case 403:	/* Forbidden */
+		case 404:	/* Not Found */
+			log_printf(http->log, INFO, "http_parse_header", "Client error (%d %s)", code, message);
+			ret = FAIL;
+			break;
+
+		case 500:	/* Internal Server Error */
+		case 503:	/* Service Unavailable */
+			log_printf(http->log, INFO, "http_parse_header", "Server error (%d %s)", code, message);
+			ret = RETRY;
+			break;
+
+		case 501:	/* Not Implemented */
+		case 502:	/* Bad Gateway */
+			log_printf(http->log, INFO, "http_parse_header", "Server error (%d %s)", code, message);
+			ret = FAIL;
+			break;
+
+		default:
+			log_printf(http->log, INFO, "http_parse_header", "Unknown response code (%d %s)", code, message);
+			ret = FAIL;
+			break;
+	}
+
+	free(message);
+
+	buf = strtok(http->header, "\r\n");
+	buf = strtok(NULL, "\r\n");
+	while (buf != NULL) {
+		log_printf(http->log, (ret == SUCCESS ? DETAILS : INFO), "http_parse_header", "%s", buf);
+		buf = strtok(NULL, "\r\n");
+	}
+
+	return ret;
 }
 
 int http_disconnect(http_t *http) {

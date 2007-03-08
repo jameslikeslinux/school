@@ -25,7 +25,6 @@ void draw_post_input();
 void draw_commands();
 void draw_cancel();
 void set_input_action(int action);
-void select_input_form();
 void message_logged();
 void change_display_log_type(message_type type);
 void http_run_thread(void *http_t_as_void);
@@ -40,6 +39,15 @@ static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
 static pthread_t http_thread;
+
+static inline void trim(char *string) {
+	int pos = strlen(string) - 1;
+
+	while (string[pos] == ' ')
+		pos--;
+	
+	string[pos + 1] = '\0';
+}
 
 int main() {
 	int logi, ch, y, x;
@@ -61,7 +69,7 @@ int main() {
 	draw_url_input();
 	draw_commands();
 
-	select_input_form();
+	pos_form_cursor(url_form);
 
 	raw();
 	noecho();
@@ -99,11 +107,10 @@ int main() {
 		else if (ch == '\n' && current_action & URL_INPUTTING) {
 			int ret;
 
-			form_driver(url_form, REQ_END_FIELD);
-			form_driver(url_form, 'a');
-			form_driver(url_form, REQ_BEG_FIELD);
-			strcpy(url, field_buffer(url_field[0], 0));
-			*strrchr(url, 'a') = '\0';
+			form_driver(url_form, REQ_VALIDATION);
+			strncpy(url, field_buffer(url_field[0], 0), FIELD_BUF_SIZE);
+			url[FIELD_BUF_SIZE - 1] = '\0';
+			trim(url);
 
 			http_url_init(&http_url);
 			if (ret = http_url_parse(&http_url, url)) {
@@ -135,25 +142,29 @@ int main() {
 		} else if (tolower(ch) == 'g' && current_action & METHOD_SELECTING) {
 			http_init(&http, &http_url, GET, NULL, 0, 3, &log);
 			pthread_create(&http_thread, NULL, http_run_thread, &http);
+			draw_cancel();
 		} else if (tolower(ch) == 'h' && current_action & METHOD_SELECTING) {
-			log_printf(&log, INFO, "ui", "HEAD %s", url);
+			http_init(&http, &http_url, HEAD, NULL, 0, 3, &log);
+			pthread_create(&http_thread, NULL, http_run_thread, &http);
+			draw_cancel();
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {
 			draw_post_input();
 			draw_cancel();
-			select_input_form();
+			pos_form_cursor(url_form);
 		} else if (ch == '\n' && current_action & POST_INPUTTING) {
-			form_driver(url_form, REQ_END_FIELD);
-			form_driver(url_form, 'a');
-			form_driver(url_form, REQ_BEG_FIELD);
-			strcpy(post, field_buffer(url_field[0], 0));
-			*strrchr(url, 'a') = '\0';
+			form_driver(url_form, REQ_VALIDATION);
+			strncpy(post, field_buffer(url_field[0], 0), FIELD_BUF_SIZE);
+			post[FIELD_BUF_SIZE - 1] = '\0';
+			trim(post);
+
+			http_init(&http, &http_url, POST, post, strlen(post), 3, &log);
+			pthread_create(&http_thread, NULL, http_run_thread, &http);
 			
-			log_printf(&log, INFO, "ui", "POST %s", url);
-			log_printf(&log, INFO, "ui", "%s", post);
+			draw_cancel();
 		} else if (ch == '') {
 			draw_url_input();
 			draw_commands();
-			select_input_form();
+			pos_form_cursor(url_form);
 		} else
 			form_driver(url_form, ch);
 
@@ -198,12 +209,6 @@ void create_input_form() {
 	post_form(url_form);
 
 	wrefresh(input_window);
-}
-
-void select_input_form() {
-	form_driver(url_form, ' ');
-	form_driver(url_form, REQ_LEFT_CHAR);
-	form_driver(url_form, REQ_DEL_CHAR);
 }
 
 void delete_input_form() {
@@ -364,5 +369,5 @@ void http_run_thread(void *http_t_as_void) {
 
 	draw_commands();
 	draw_url_input();
-	select_input_form();
+	pos_form_cursor(url_form);
 }

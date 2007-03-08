@@ -267,7 +267,7 @@ int http_recv_header(http_t *http) {
 			http->header = (char*) malloc(size);
 
 			read = http_recv(http, http->header, size - 1, 0);
-			if ((read >= 0 && read < size - 1) | size > 8192) {
+			if ((read >= 0 && read < size - 1) || size > 8192) {
 				log_printf(http->log, INFO, "http_recv_header", "Error receiving full header");
 				free(http->header);
 				http->header = NULL;

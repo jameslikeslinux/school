@@ -40,7 +40,7 @@ void log_herror(log_t *log, char *source) {
 }
 
 void log_printf(log_t *log, message_type type, char *source, char *format, ...) {
-	char description[255];
+	char description[1024];
 	va_list args;
 	
 	va_start(args, format);

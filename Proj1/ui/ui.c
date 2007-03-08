@@ -40,15 +40,6 @@ static FORM *url_form;
 static FIELD *url_field[2];
 static pthread_t http_thread;
 
-static inline void trim(char *string) {
-	int pos = strlen(string) - 1;
-
-	while (string[pos] == ' ')
-		pos--;
-	
-	string[pos + 1] = '\0';
-}
-
 int main() {
 	int logi, ch, y, x;
 	http_t http;
@@ -107,10 +98,12 @@ int main() {
 		else if (ch == '\n' && current_action & URL_INPUTTING) {
 			int ret;
 
+			form_driver(url_form, REQ_END_FIELD);
+			form_driver(url_form, 'a');
 			form_driver(url_form, REQ_VALIDATION);
 			strncpy(url, field_buffer(url_field[0], 0), FIELD_BUF_SIZE);
 			url[FIELD_BUF_SIZE - 1] = '\0';
-			trim(url);
+			*strrchr(url, 'a') = '\0';
 
 			http_url_init(&http_url);
 			if (ret = http_url_parse(&http_url, url)) {
@@ -152,10 +145,12 @@ int main() {
 			draw_cancel();
 			pos_form_cursor(url_form);
 		} else if (ch == '\n' && current_action & POST_INPUTTING) {
+			form_driver(url_form, REQ_END_FIELD);
+			form_driver(url_form, 'a');
 			form_driver(url_form, REQ_VALIDATION);
 			strncpy(post, field_buffer(url_field[0], 0), FIELD_BUF_SIZE);
 			post[FIELD_BUF_SIZE - 1] = '\0';
-			trim(post);
+			*strrchr(post, 'a') = '\0';
 
 			http_init(&http, &http_url, POST, post, strlen(post), 3, &log);
 			pthread_create(&http_thread, NULL, http_run_thread, &http);

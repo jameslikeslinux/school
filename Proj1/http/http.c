@@ -28,6 +28,7 @@ void http_init(http_t *http, http_url_t *url, http_method method, void *post_dat
 	http->log = log;
 	http->sockfd = -1;
 	http->header = NULL;
+	http->content_length = 0;
 }
 
 void http_run(http_t *http) {
@@ -77,6 +78,9 @@ RECV_HEADER:
 		goto CONNECT;
 	} else
 		recv_header_try = 0;
+	
+	if (http->method == HEAD)
+		return;
 }
 
 int http_connect(http_t *http) {
@@ -249,7 +253,7 @@ int http_recv_header(http_t *http) {
 	log_printf(http->log, INFO, "http_recv_header", "Receiving HTTP response header...");
 
 	size = 1024;
-	buf = (char*) malloc(size);
+	buf = (char*) malloc(size);	/* buf should probably be statically allocated, but whatever works */
 
 	while (1) {
 		if ((read = http_recv(http, buf, size - 1, MSG_PEEK)) < 0) {
@@ -263,7 +267,7 @@ int http_recv_header(http_t *http) {
 			http->header = (char*) malloc(size);
 
 			read = http_recv(http, http->header, size - 1, 0);
-			if (read >= 0 && read < size - 1) {
+			if ((read >= 0 && read < size - 1) | size > 8192) {
 				log_printf(http->log, INFO, "http_recv_header", "Error receiving full header");
 				free(http->header);
 				http->header = NULL;

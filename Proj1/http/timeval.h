@@ -4,7 +4,7 @@
 #include <sys/time.h>
 
 /* GFDL Code from http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html */
-inline int timeval_subtract(struct timeval *x, struct timeval *y) {
+static inline int timeval_subtract(struct timeval *x, struct timeval *y) {
 	if (x->tv_usec < y->tv_usec) {
 		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
 		y->tv_usec -= 1000000 * nsec;

@@ -21,6 +21,7 @@ typedef struct {
 	log_t *log;
 	int sockfd;
 	char *header;
+	int content_length;
 } http_t;
 
 void http_init(http_t *http, http_url_t *url, http_method method, void *post_data, size_t post_data_size, int num_retry, log_t *log);

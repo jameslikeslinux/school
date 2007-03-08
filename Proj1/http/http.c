@@ -13,6 +13,8 @@
 #define CONTENT_LENGTH_HEADER "Content-Length: "
 #define RESPONSE_STATUS_REGEX "^HTTP/(1\\.0|1\\.1) ([0-9]{3}) (.*)\r$"
 #define RESPONSE_STATUS_MATCHES 4
+#define CONTENT_LENGTH_REGEX "^Content-Length: ([0-9]*)\r$"
+#define CONTENT_LENGTH_MATCHES 2
 
 static char *http_method_strings[] = {"GET", "HEAD", "POST"};
 
@@ -293,20 +295,23 @@ int http_recv_header(http_t *http) {
 
 int http_parse_header(http_t *http) {
 	regex_t regex;
-	regmatch_t matches[RESPONSE_STATUS_MATCHES];
+	regmatch_t *matches;
 	int ret, size, code;
-	char *codestr, *message, *buf;
+	char *codestr, *message, *buf, *sizestr;
 
 	if (http->status < HEADER_RECEIVED) {
 		log_printf(http->log, INFO, "http_parse_header", "Header not received");
 		return FAIL;
 	}
 
+	matches = (regmatch_t*) malloc(RESPONSE_STATUS_MATCHES * sizeof(regmatch_t));
+
 	regcomp(&regex, RESPONSE_STATUS_REGEX, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
 	ret = regexec(&regex, http->header, RESPONSE_STATUS_MATCHES, matches, 0);
 	regfree(&regex);
 	if (ret) {
 		log_printf(http->log, INFO, "http_parse_header", "Invalid response header");
+		free(matches);
 		return FAIL;
 	}
 
@@ -321,6 +326,8 @@ int http_parse_header(http_t *http) {
 	message = (char*) malloc(size + 1);
 	strncpy(message, http->header + matches[3].rm_so, size);
 	message[size] = '\0';
+
+	free(matches);
 
 	switch (code) {
 		case 200:	/* OK */
@@ -377,6 +384,23 @@ int http_parse_header(http_t *http) {
 		log_printf(http->log, (ret == SUCCESS ? DETAILS : INFO), "http_parse_header", "%s", buf);
 		buf = strtok(NULL, "\r\n");
 	}
+
+	matches = (regmatch_t*) malloc(CONTENT_LENGTH_MATCHES * sizeof(regmatch_t));
+
+	regcomp(&regex, CONTENT_LENGTH_REGEX, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+	ret = regexec(&regex, http->header, CONTENT_LENGTH_MATCHES, matches, 0);
+	regfree(&regex);
+
+	if (!ret) {
+		size = (int) matches[1].rm_eo - matches[1].rm_so;
+		sizestr = (char*) malloc(size + 1);
+		strncpy(sizestr, http->header + matches[1].rm_so, size);
+		sizestr[size] = '\0';
+		http->content_length = atoi(sizestr);
+		free(sizestr);
+	}
+
+	free(matches);
 
 	return ret;
 }

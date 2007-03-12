@@ -31,15 +31,17 @@ void http_init(http_t *http, http_url_t *url, http_method method, void *post_dat
 	http->sockfd = -1;
 	http->header = NULL;
 	http->content_length = 0;
+	http->received = 0;
 }
 
 void http_run(http_t *http) {
-	int ret, connect_try, request_try, recv_header_try, modifier, fd;
+	int ret, connect_try, request_try, recv_header_try, save_file_try, modifier, fd = -1;
 	char *filename;
 
 	connect_try = 0;
 	request_try = 0;
 	recv_header_try = 0;
+	save_file_try = 0;
 
 CONNECT:
 	connect_try++;
@@ -82,20 +84,42 @@ CONNECT:
 	
 	if (http->method == HEAD)
 		return;
-	
-	filename = get_filename();
-	modifier = O_EXCL;
-	while ((fd = open(filename, O_CREAT | modifier)) == -1) {
-		log_perror(http->log, "open");
 
-		if (errno == EEXIST)
-			if (get_overwrite()) {
-				modifier = 0;
-				continue;
-			}
-
+	if (fd == -1) {
 		filename = get_filename();
+		modifier = O_EXCL;
+		
+		log_printf(http->log, DETAILS, "http_run", "Calling open");
+		while ((fd = open(filename, O_CREAT | O_WRONLY | modifier, 0666)) == -1) {
+			if (errno == EEXIST) {
+				if (get_overwrite()) {
+					modifier = 0;
+					continue;
+				}
+			} else
+				log_perror(http->log, "open");
+		
+			filename = get_filename();
+		}
 	}
+
+	save_file_try = 0;
+	ret = http_save_file(http, fd);
+	
+	if (ret == FAIL || request_try >= http->num_retry)
+		return;
+	else if (ret == RETRY) {
+		http_disconnect(http);
+		log_printf(http->log, INFO, "http_run", "Retrying http_save_file %d of %d times in %d seconds...", save_file_try, http->num_retry, RETRY_SLEEP);
+		sleep(RETRY_SLEEP);
+		goto CONNECT;
+	} else
+		request_try = 0;
+	
+
+	log_printf(http->log, DETAILS, "http_run", "Calling close");
+	if (close(fd) == -1)
+		log_perror(http->log, "close");
 }
 
 int http_connect(http_t *http) {
@@ -427,10 +451,34 @@ int http_parse_header(http_t *http) {
 }
 
 int http_save_file(http_t *http, int fd) {
+	struct timeval starttime, endtime;
+	char buf[1024];
+	int ret;
+
 	if (http->status < HEADER_PARSED) {
 		log_printf(http->log, INFO, "http_save_file", "Header not parsed");
 		return FAIL;
 	}
+	
+	gettimeofday(&starttime, NULL);
+
+	log_printf(http->log, INFO, "http_save_file", "Saving file...");
+
+	while ((ret = http_recv(http, buf, 1024, 0)) != 0) {
+		if (ret < 0)
+			return ret;
+	
+		log_printf(http->log, DETAILS, "http_save_file", "Calling write");
+		if (write(fd, buf, ret) == -1) {
+			log_perror(http->log, "write");
+			return FAIL;
+		}
+
+		http->received += ret;
+	}
+
+	gettimeofday(&endtime, NULL);
+	log_printf(http->log, DETAILS, "http_save_file", "File received in %.2f s.", timeval_subtract(&endtime, &starttime) / 1000.0);
 }
 
 int http_disconnect(http_t *http) {

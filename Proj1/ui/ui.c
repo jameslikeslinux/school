@@ -34,16 +34,16 @@ void* http_run_thread(void *http_t_as_void);
 
 static log_t log;
 static message_type display_log_type;
-static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols, file_inputted;
+static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols, inputted, do_overwrite;
 static char url[FIELD_BUF_SIZE], post[FIELD_BUF_SIZE], file[FIELD_BUF_SIZE];
 static WINDOW *log_window, *input_window, *command_window;
 static CDKSCREEN *cdk_screen;
 static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
-static pthread_t http_thread, file_input_thread;
-static pthread_cond_t file_input_cond = PTHREAD_COND_INITIALIZER; 
-static pthread_mutex_t file_input_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t http_thread, input_thread;
+static pthread_cond_t input_cond = PTHREAD_COND_INITIALIZER; 
+static pthread_mutex_t input_mutex = PTHREAD_MUTEX_INITIALIZER;
 static http_url_t http_url;
 
 int main() {
@@ -168,11 +168,25 @@ int main() {
 			file[FIELD_BUF_SIZE - 1] = '\0';
 			*strrchr(file, 'a') = '\0';
 
-			pthread_mutex_lock(&file_input_mutex);
-			file_inputted = 1;
-			pthread_cond_broadcast(&file_input_cond);
-			pthread_mutex_unlock(&file_input_mutex);
-		} else if (ch == '') {
+			pthread_mutex_lock(&input_mutex);
+			inputted = 1;
+			pthread_cond_broadcast(&input_cond);
+			pthread_mutex_unlock(&input_mutex);
+		} else if ((ch == 'y' || ch == 'Y') && current_action & OVERWRITE_INPUTTING) {
+			do_overwrite = 1;
+
+			pthread_mutex_lock(&input_mutex);
+			inputted = 1;
+			pthread_cond_broadcast(&input_cond);
+			pthread_mutex_unlock(&input_mutex);
+		} else if ((ch == 'n' || ch == 'N') && current_action & OVERWRITE_INPUTTING) {
+			do_overwrite = 0;
+			
+			pthread_mutex_lock(&input_mutex);
+			inputted = 1;
+			pthread_cond_broadcast(&input_cond);
+			pthread_mutex_unlock(&input_mutex);
+		}else if (ch == '') {
 			if (http.status != DISCONNECTED)
 				http_disconnect(&http);
 			draw_url_input();
@@ -186,8 +200,8 @@ int main() {
 	destroyCDKScreen(cdk_screen);
 	endwin();
 
-	pthread_mutex_destroy(&file_input_mutex);
-	pthread_cond_destroy(&file_input_cond);
+	pthread_mutex_destroy(&input_mutex);
+	pthread_cond_destroy(&input_cond);
 
 	return 0;
 }
@@ -390,18 +404,18 @@ void* http_run_thread(void *http_t_as_void) {
 	pos_form_cursor(url_form);
 }
 
-void* open_file_input_thread(void *data) {
-	pthread_mutex_lock(&file_input_mutex);
-	while (!file_inputted)
-		pthread_cond_wait(&file_input_cond, &file_input_mutex);
-	pthread_mutex_unlock(&file_input_mutex);
+void* open_input_thread(void *data) {
+	pthread_mutex_lock(&input_mutex);
+	while (!inputted)
+		pthread_cond_wait(&input_cond, &input_mutex);
+	pthread_mutex_unlock(&input_mutex);
 }
 
 char* get_filename() {
 	int size, i;
 	char *dirname, *filename, *absname;
 
-	file_inputted = 0;
+	inputted = 0;
 
 	create_input_form();
 
@@ -431,18 +445,25 @@ char* get_filename() {
 
 	set_input_action(FILE_INPUTTING);
 	
-	pthread_create(&file_input_thread, NULL, open_file_input_thread, NULL);
-	pthread_join(file_input_thread, NULL);
+	pthread_create(&input_thread, NULL, open_input_thread, NULL);
+	pthread_join(input_thread, NULL);
 
 	return file;
 }
 
 int get_overwrite() {
+	inputted = 0;
+
 	delete_input_form();
 
 	wclear(input_window);
-	wprintf("File exists.  Overwrite?  (y/n)");
+	wprintw(input_window, "File exists.  Overwrite?  (y/n) ");
 	wrefresh(input_window);
 
 	set_input_action(OVERWRITE_INPUTTING);
+	
+	pthread_create(&input_thread, NULL, open_input_thread, NULL);
+	pthread_join(input_thread, NULL);
+
+	return do_overwrite;
 }

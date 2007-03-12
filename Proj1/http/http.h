@@ -8,7 +8,7 @@
 #define FAIL -1
 #define RETRY -2
 
-typedef enum { DISCONNECTED, CONNECTED, REQUEST_SENT, HEADER_RECEIVED } http_status;
+typedef enum { DISCONNECTED, CONNECTED, REQUEST_SENT, HEADER_RECEIVED, HEADER_PARSED } http_status;
 typedef enum { GET, HEAD, POST } http_method;
 
 typedef struct {
@@ -30,6 +30,7 @@ int http_connect(http_t *http);
 int http_send_request(http_t *http);
 int http_recv_header(http_t *http);
 int http_parse_header(http_t *http);
+int http_save_to_file(http_t *http, int fd);
 int http_disconnect(http_t *http);
 
 #endif

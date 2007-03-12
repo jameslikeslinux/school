@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <regex.h>
 #include "http.h"
 #include "base64.h"
 #include "timeval.h"
+#include "ui.h"
 
 #define RETRY_SLEEP 5
 #define HOST_HEADER "Host: "
@@ -32,7 +34,8 @@ void http_init(http_t *http, http_url_t *url, http_method method, void *post_dat
 }
 
 void http_run(http_t *http) {
-	int ret, connect_try, request_try, recv_header_try;
+	int ret, connect_try, request_try, recv_header_try, modifier, fd;
+	char *filename;
 
 	connect_try = 0;
 	request_try = 0;
@@ -51,7 +54,6 @@ CONNECT:
 	} else
 		connect_try = 0;
 
-SEND_REQUEST:
 	request_try++;
 	ret = http_send_request(http);
 
@@ -65,7 +67,6 @@ SEND_REQUEST:
 	} else
 		request_try = 0;
 
-RECV_HEADER:
 	recv_header_try++;
 	ret = http_recv_header(http);
 
@@ -81,6 +82,20 @@ RECV_HEADER:
 	
 	if (http->method == HEAD)
 		return;
+	
+	filename = get_filename();
+	modifier = O_EXCL;
+	while ((fd = open(filename, O_CREAT | modifier)) == -1) {
+		log_perror(http->log, "open");
+
+		if (errno == EEXIST)
+			if (get_overwrite()) {
+				modifier = 0;
+				continue;
+			}
+
+		filename = get_filename();
+	}
 }
 
 int http_connect(http_t *http) {
@@ -405,8 +420,17 @@ int http_parse_header(http_t *http) {
 	}
 
 	free(matches);
+	
+	http->status = HEADER_PARSED;
 
 	return ret;
+}
+
+int http_save_file(http_t *http, int fd) {
+	if (http->status < HEADER_PARSED) {
+		log_printf(http->log, INFO, "http_save_file", "Header not parsed");
+		return FAIL;
+	}
 }
 
 int http_disconnect(http_t *http) {

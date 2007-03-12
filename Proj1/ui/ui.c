@@ -1,6 +1,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include <form.h>
+#include <pthread.h>
 #include "cdk.h"
 #include "http.h"
 
@@ -14,6 +15,8 @@
 #define METHOD_SELECTING (1 << 1)
 #define POST_INPUTTING (1 << 2)
 #define CANCEL_SHOWING (1 << 3)
+#define FILE_INPUTTING (1 << 4)
+#define OVERWRITE_INPUTTING (1 << 5)
 
 void create_windows();
 void create_input_form();
@@ -27,23 +30,25 @@ void draw_cancel();
 void set_input_action(int action);
 void message_logged();
 void change_display_log_type(message_type type);
-void http_run_thread(void *http_t_as_void);
+void* http_run_thread(void *http_t_as_void);
 
 static log_t log;
 static message_type display_log_type;
-static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols;
-static char url[FIELD_BUF_SIZE], post[FIELD_BUF_SIZE];
+static int current_action, log_lines, log_cols, input_lines, input_cols, command_lines, command_cols, file_inputted;
+static char url[FIELD_BUF_SIZE], post[FIELD_BUF_SIZE], file[FIELD_BUF_SIZE];
 static WINDOW *log_window, *input_window, *command_window;
 static CDKSCREEN *cdk_screen;
 static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
-static pthread_t http_thread;
+static pthread_t http_thread, file_input_thread;
+static pthread_cond_t file_input_cond = PTHREAD_COND_INITIALIZER; 
+static pthread_mutex_t file_input_mutex = PTHREAD_MUTEX_INITIALIZER;
+static http_url_t http_url;
 
 int main() {
 	int logi, ch, y, x;
 	http_t http;
-	http_url_t http_url;
 
 	display_log_type = INFO;
 	log_init(&log);
@@ -154,9 +159,22 @@ int main() {
 
 			http_init(&http, &http_url, POST, post, strlen(post), 3, &log);
 			pthread_create(&http_thread, NULL, http_run_thread, &http);
-			
 			draw_cancel();
+		} else if (ch == '\n' && current_action & FILE_INPUTTING) {
+			form_driver(url_form, REQ_END_FIELD);
+			form_driver(url_form, 'a');
+			form_driver(url_form, REQ_VALIDATION);
+			strncpy(file, field_buffer(url_field[0], 0), FIELD_BUF_SIZE);
+			file[FIELD_BUF_SIZE - 1] = '\0';
+			*strrchr(file, 'a') = '\0';
+
+			pthread_mutex_lock(&file_input_mutex);
+			file_inputted = 1;
+			pthread_cond_broadcast(&file_input_cond);
+			pthread_mutex_unlock(&file_input_mutex);
 		} else if (ch == '') {
+			if (http.status != DISCONNECTED)
+				http_disconnect(&http);
 			draw_url_input();
 			draw_commands();
 			pos_form_cursor(url_form);
@@ -167,6 +185,9 @@ int main() {
 	destroyCDKSwindow(log_swindow);
 	destroyCDKScreen(cdk_screen);
 	endwin();
+
+	pthread_mutex_destroy(&file_input_mutex);
+	pthread_cond_destroy(&file_input_cond);
 
 	return 0;
 }
@@ -316,6 +337,8 @@ void set_input_action(int action) {
 	current_action &= ~URL_INPUTTING;
 	current_action &= ~METHOD_SELECTING;
 	current_action &= ~POST_INPUTTING;
+	current_action &= ~FILE_INPUTTING;
+	current_action &= ~OVERWRITE_INPUTTING;
 	current_action |= action;
 }
 
@@ -356,7 +379,7 @@ void change_display_log_type(message_type type) {
 	display_log_type = type;
 }
 
-void http_run_thread(void *http_t_as_void) {
+void* http_run_thread(void *http_t_as_void) {
 	http_t *http = (http_t*) http_t_as_void;
 
 	http_run(http);
@@ -365,4 +388,61 @@ void http_run_thread(void *http_t_as_void) {
 	draw_commands();
 	draw_url_input();
 	pos_form_cursor(url_form);
+}
+
+void* open_file_input_thread(void *data) {
+	pthread_mutex_lock(&file_input_mutex);
+	while (!file_inputted)
+		pthread_cond_wait(&file_input_cond, &file_input_mutex);
+	pthread_mutex_unlock(&file_input_mutex);
+}
+
+char* get_filename() {
+	int size, i;
+	char *dirname, *filename, *absname;
+
+	file_inputted = 0;
+
+	create_input_form();
+
+	dirname = getcwd(NULL, 0);
+	filename = strrchr(http_url.abs_path, '/') + 1;
+
+	if (strlen(filename) == 0) {
+		size = strlen(dirname) + strlen(http_url.host) + 2;
+		absname = (char*) malloc(size);
+		sprintf(absname, "%s/%s", dirname, http_url.host);
+	} else {
+		size = strlen(dirname) + strlen(filename) + 2;
+		absname = (char*) malloc(size);
+		sprintf(absname, "%s/%s", dirname, filename);
+	}
+
+	free(dirname);
+	
+	wclear(input_window);
+	wprintw(input_window, "File: ");
+	wrefresh(input_window);
+
+	/* Should use set_field_buffer */
+	for (i = 0; i < size; i++)
+		form_driver(url_form, absname[i]);
+	free(absname);
+
+	set_input_action(FILE_INPUTTING);
+	
+	pthread_create(&file_input_thread, NULL, open_file_input_thread, NULL);
+	pthread_join(file_input_thread, NULL);
+
+	return file;
+}
+
+int get_overwrite() {
+	delete_input_form();
+
+	wclear(input_window);
+	wprintf("File exists.  Overwrite?  (y/n)");
+	wrefresh(input_window);
+
+	set_input_action(OVERWRITE_INPUTTING);
 }

@@ -17,6 +17,7 @@
 #define CANCEL_SHOWING (1 << 3)
 #define FILE_INPUTTING (1 << 4)
 #define OVERWRITE_INPUTTING (1 << 5)
+#define PROGRESS_SHOWING (1 << 6)
 
 void create_windows();
 void create_input_form();
@@ -31,6 +32,7 @@ void set_input_action(int action);
 void message_logged();
 void change_display_log_type(message_type type);
 void* http_run_thread(void *http_t_as_void);
+void* draw_progress_thread(void *data);
 
 static log_t log;
 static message_type display_log_type;
@@ -45,10 +47,18 @@ static pthread_t http_thread, input_thread;
 static pthread_cond_t input_cond = PTHREAD_COND_INITIALIZER; 
 static pthread_mutex_t input_mutex = PTHREAD_MUTEX_INITIALIZER;
 static http_url_t http_url;
+static http_t http;
+
+inline void select_form() {
+	pos_form_cursor(url_form);
+	form_driver(url_form, ' ');
+	form_driver(url_form, REQ_LEFT_CHAR);
+	form_driver(url_form, REQ_DEL_CHAR);
+	wrefresh(input_window);
+}
 
 int main() {
 	int logi, ch, y, x;
-	http_t http;
 
 	display_log_type = INFO;
 	log_init(&log);
@@ -65,7 +75,7 @@ int main() {
 	draw_url_input();
 	draw_commands();
 
-	pos_form_cursor(url_form);
+	select_form();
 
 	raw();
 	noecho();
@@ -148,7 +158,7 @@ int main() {
 		} else if (tolower(ch) == 'p' && current_action & METHOD_SELECTING) {
 			draw_post_input();
 			draw_cancel();
-			pos_form_cursor(url_form);
+			select_form();
 		} else if (ch == '\n' && current_action & POST_INPUTTING) {
 			form_driver(url_form, REQ_END_FIELD);
 			form_driver(url_form, 'a');
@@ -191,7 +201,7 @@ int main() {
 				http_disconnect(&http);
 			draw_url_input();
 			draw_commands();
-			pos_form_cursor(url_form);
+			select_form();
 		} else
 			form_driver(url_form, ch);
 
@@ -353,6 +363,7 @@ void set_input_action(int action) {
 	current_action &= ~POST_INPUTTING;
 	current_action &= ~FILE_INPUTTING;
 	current_action &= ~OVERWRITE_INPUTTING;
+	current_action &= ~PROGRESS_SHOWING;
 	current_action |= action;
 }
 
@@ -401,7 +412,7 @@ void* http_run_thread(void *http_t_as_void) {
 
 	draw_commands();
 	draw_url_input();
-	pos_form_cursor(url_form);
+	select_form();
 }
 
 void* open_input_thread(void *data) {
@@ -438,10 +449,11 @@ char* get_filename() {
 	wprintw(input_window, "File: ");
 	wrefresh(input_window);
 
-	/* Should use set_field_buffer */
+	/* Should use set_field_buffer, but it doesn't work */
 	for (i = 0; i < size; i++)
 		form_driver(url_form, absname[i]);
 	free(absname);
+	select_form();
 
 	set_input_action(FILE_INPUTTING);
 	
@@ -466,4 +478,19 @@ int get_overwrite() {
 	pthread_join(input_thread, NULL);
 
 	return do_overwrite;
+}
+
+void* draw_progress_thread(void *data) {
+	delete_input_form();
+	set_input_action(PROGRESS_SHOWING);
+
+	while (current_action & PROGRESS_SHOWING) {
+		wclear(input_window);
+		if (http.content_length > 0)
+			wprintw(input_window, "Completed %d of %d bytes", http.received, http.content_length);
+		else
+			wprintw(input_window, "Completed %d of unknown bytes", http.received);
+		wrefresh(input_window);
+		sleep(1);
+	}
 }

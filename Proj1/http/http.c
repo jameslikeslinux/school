@@ -265,7 +265,7 @@ int http_recv(http_t *http, void *buf, size_t size, int flags) {
 		return FAIL;
 	}
 
-	log_printf(http->log, DETAILS, "http_recv", "Calling recv");
+	/* log_printf(http->log, DETAILS, "http_recv", "Calling recv"); */
 	if ((ret = recv(http->sockfd, buf, size, flags)) == -1) {
 		log_perror(http->log, "recv");
 		return FAIL;
@@ -468,7 +468,7 @@ int http_save_file(http_t *http, int fd) {
 		if (ret < 0)
 			return ret;
 	
-		log_printf(http->log, DETAILS, "http_save_file", "Calling write");
+		/* log_printf(http->log, DETAILS, "http_save_file", "Calling write"); */
 		if (write(fd, buf, ret) == -1) {
 			log_perror(http->log, "write");
 			return FAIL;

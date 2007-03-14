@@ -3,5 +3,6 @@
 
 char* get_filename();
 int get_overwrite();
+void draw_progress();
 
 #endif

@@ -15,7 +15,7 @@
 #define CONTENT_LENGTH_HEADER "Content-Length: "
 #define RESPONSE_STATUS_REGEX "^HTTP/(1\\.0|1\\.1) ([0-9]{3}) (.*)\r$"
 #define RESPONSE_STATUS_MATCHES 4
-#define CONTENT_LENGTH_REGEX "^Content-Length: ([0-9]*)\r$"
+#define CONTENT_LENGTH_REGEX "^Content-Length: ([0-9]*)$"
 #define CONTENT_LENGTH_MATCHES 2
 
 static char *http_method_strings[] = {"GET", "HEAD", "POST"};
@@ -44,6 +44,9 @@ void http_run(http_t *http) {
 	save_file_try = 0;
 
 CONNECT:
+	http->content_length = 0;
+	http->received = 0;
+
 	connect_try++;
 	ret = http_connect(http);
 
@@ -86,13 +89,13 @@ CONNECT:
 		return;
 
 	if (fd == -1) {
-		filename = get_filename();
+		filename = get_filename();	/* Oh, this is dirty */
 		modifier = O_EXCL;
 		
 		log_printf(http->log, DETAILS, "http_run", "Calling open");
 		while ((fd = open(filename, O_CREAT | O_WRONLY | modifier, 0666)) == -1) {
 			if (errno == EEXIST) {
-				if (get_overwrite()) {
+				if (get_overwrite()) {	/* It hurts me to do this */
 					modifier = 0;
 					continue;
 				}
@@ -102,6 +105,8 @@ CONNECT:
 			filename = get_filename();
 		}
 	}
+
+	draw_progress();	/* I'm dying here */
 
 	save_file_try = 0;
 	ret = http_save_file(http, fd);
@@ -421,28 +426,26 @@ int http_parse_header(http_t *http) {
 
 	free(message);
 
+	matches = (regmatch_t*) malloc(CONTENT_LENGTH_MATCHES * sizeof(regmatch_t));
+	regcomp(&regex, CONTENT_LENGTH_REGEX, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+
 	buf = strtok(http->header, "\r\n");
 	buf = strtok(NULL, "\r\n");
 	while (buf != NULL) {
-		log_printf(http->log, (ret == SUCCESS ? DETAILS : INFO), "http_parse_header", "%s", buf);
+		if (!regexec(&regex, buf, CONTENT_LENGTH_MATCHES, matches, 0)) {
+			size = (int) matches[1].rm_eo - matches[1].rm_so;
+			sizestr = (char*) malloc(size + 1);
+			strncpy(sizestr, buf + matches[1].rm_so, size);
+			sizestr[size] = '\0';
+			http->content_length = atoi(sizestr);
+			free(sizestr);
+		}
+
+		log_printf(http->log, ((ret == SUCCESS && http->method != HEAD) ? DETAILS : INFO), "http_parse_header", "%s", buf);
 		buf = strtok(NULL, "\r\n");
 	}
 
-	matches = (regmatch_t*) malloc(CONTENT_LENGTH_MATCHES * sizeof(regmatch_t));
-
-	regcomp(&regex, CONTENT_LENGTH_REGEX, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
-	ret = regexec(&regex, http->header, CONTENT_LENGTH_MATCHES, matches, 0);
 	regfree(&regex);
-
-	if (!ret) {
-		size = (int) matches[1].rm_eo - matches[1].rm_so;
-		sizestr = (char*) malloc(size + 1);
-		strncpy(sizestr, http->header + matches[1].rm_so, size);
-		sizestr[size] = '\0';
-		http->content_length = atoi(sizestr);
-		free(sizestr);
-	}
-
 	free(matches);
 	
 	http->status = HEADER_PARSED;
@@ -485,7 +488,7 @@ int http_disconnect(http_t *http) {
 	struct timeval starttime, endtime;
 
 	if (http->status == DISCONNECTED) {
-		log_printf(http->log, INFO, "http_disconnect", "Already disconnected");
+		/* log_printf(http->log, INFO, "http_disconnect", "Already disconnected"); */
 		return FAIL;
 	}
 	

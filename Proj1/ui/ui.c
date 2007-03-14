@@ -27,6 +27,7 @@ void draw_url_input();
 void draw_method_selection();
 void draw_post_input();
 void draw_commands();
+void draw_progress();
 void draw_cancel();
 void set_input_action(int action);
 void message_logged();
@@ -43,7 +44,7 @@ static CDKSCREEN *cdk_screen;
 static CDKSWINDOW *log_swindow;
 static FORM *url_form;
 static FIELD *url_field[2];
-static pthread_t http_thread, input_thread;
+static pthread_t http_thread, input_thread, progress_thread;
 static pthread_cond_t input_cond = PTHREAD_COND_INITIALIZER; 
 static pthread_mutex_t input_mutex = PTHREAD_MUTEX_INITIALIZER;
 static http_url_t http_url;
@@ -484,7 +485,7 @@ void* draw_progress_thread(void *data) {
 	delete_input_form();
 	set_input_action(PROGRESS_SHOWING);
 
-	while (current_action & PROGRESS_SHOWING) {
+	while (current_action & PROGRESS_SHOWING && http.status != DISCONNECTED) {
 		wclear(input_window);
 		if (http.content_length > 0)
 			wprintw(input_window, "Completed %d of %d bytes", http.received, http.content_length);
@@ -493,4 +494,8 @@ void* draw_progress_thread(void *data) {
 		wrefresh(input_window);
 		sleep(1);
 	}
+}
+
+void draw_progress() {
+	pthread_create(&progress_thread, NULL, draw_progress_thread, NULL);
 }

@@ -1,0 +1,46 @@
+HTTP Client
+James Lee <jlee23@umbc.edu>
+
+This HTTP client was written to be very modular.  It contains separate libraries to separate out functionality.  The libraries are as follows:
+
+	liburi: uses regex to parse URIs
+	liblist: linked list implementation from Wikipedia
+	liblog: stores messages, times, and sources in a list
+	libhttp: contains functions to communicate with servers using HTTP
+
+The UI was written with ncurses.  It makes use of libcdk for the scrolling log window.  I did not program libcdk, but included it so there would be no dependency issues.
+
+To build and run this program, in the current directory run:
+
+	./configure
+	make
+	ui/ui
+
+The available commands are documented in the UI.  Type a URL, select a method, choose a place to save.
+
+Performance (Time to fetch http://www.google.com twenty times)
+
+	~148 ms
+	~83 ms
+	~88 ms
+	~106 ms
+	~248 ms
+	~76 ms
+	~251 ms
+	~110 ms
+	~194 ms
+	~94 ms
+	~97 ms
+	~105 ms
+	~3161 ms
+	~85 ms
+	~80 ms
+	~97 ms
+	~86 ms
+	~155 ms
+	~89 ms
+	~90 ms
+
+	Average: ~212.15 ms
+
+Overall, the reception of the google start page is consistent with other clients.  The time it took was dependent on other network activity and will vary depending on the connection.

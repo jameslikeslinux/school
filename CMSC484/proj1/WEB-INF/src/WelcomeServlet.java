@@ -7,11 +7,15 @@ public class WelcomeServlet extends HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
+		Utils.printHeader(out, "Welcome");
+
 		try {
 			out.println("<p>" + SqliteItemDB.getSingleton().searchByKey("B0002").getTitle() + "</p>");
 		} catch (Exception e) {
 			e.printStackTrace(out);
 		}
+
+		Utils.printFooter(out);
 
 		out.close();
 	}

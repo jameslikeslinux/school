@@ -6,7 +6,7 @@
 
 public interface ItemDB {
 	public Item searchByKey(String key) throws Exception;
-	public Item[] searchTitle(String ss) throws Exception;
-	public Item[] searchAuthor(String ss) throws Exception;
-	public Item[] searchGenre(String ss) throws Exception;
+	public Item[] searchTitle(String title) throws Exception;
+	public Item[] searchAuthor(String author) throws Exception;
+	public Item[] searchGenre(String genre) throws Exception;
 }

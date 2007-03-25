@@ -4,4 +4,13 @@
 	"http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+	<servlet>
+		<servlet-name>WelcomeServlet</servlet-name>
+		<servlet-class>WelcomeServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>WelcomeServlet</servlet-name>
+		<url-pattern>/servlet/WelcomeServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

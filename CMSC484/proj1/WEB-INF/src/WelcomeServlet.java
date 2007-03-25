@@ -7,7 +7,7 @@ public class WelcomeServlet extends HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
-		out.println("<p>Test</p>");
+		out.println("<p>" + new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParent() + "</p>");
 
 		out.close();
 	}

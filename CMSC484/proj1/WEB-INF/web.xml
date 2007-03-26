@@ -13,4 +13,24 @@
 		<servlet-name>WelcomeServlet</servlet-name>
 		<url-pattern>/servlet/WelcomeServlet</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>SearchServlet</servlet-name>
+		<servlet-class>SearchServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SearchServlet</servlet-name>
+		<url-pattern>/servlet/SearchServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>DisplayItemServlet</servlet-name>
+		<servlet-class>DisplayItemServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>DisplayItemServlet</servlet-name>
+		<url-pattern>/servlet/DisplayItemServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

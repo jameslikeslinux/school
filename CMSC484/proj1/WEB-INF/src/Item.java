@@ -4,6 +4,7 @@ public class Item {
 	public Item(String id, String title, String author, String genre, String binding, String price, String availability) {
 		this.id = id;
 		this.title = title;
+		this.author = author;
 		this.genre = genre;
 		this.binding = binding;
 		this.price = price;
@@ -48,6 +49,14 @@ public class Item {
 
 	public void setBinding(String binding) {
 		this.binding = binding;
+	}
+
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String price) {
+		this.price = price;
 	}
 
 	public String getAvailability() {

@@ -5,6 +5,7 @@
  */
 
 public interface ItemDB {
+	public Item[] search(String field, String where, boolean exact) throws Exception;
 	public Item searchByKey(String key) throws Exception;
 	public Item[] searchTitle(String title) throws Exception;
 	public Item[] searchAuthor(String author) throws Exception;

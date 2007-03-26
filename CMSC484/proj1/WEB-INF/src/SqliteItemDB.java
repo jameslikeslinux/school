@@ -22,11 +22,15 @@ public class SqliteItemDB implements ItemDB {
 		return singleton;
 	}
 
-	private Item[] search(String column, String like) throws SQLException {
+	public Item[] search(String column, String where, boolean exact) throws SQLException {
 		List items = new ArrayList();
 
 		Statement stmt = con.createStatement();
-		ResultSet rs = stmt.executeQuery("SELECT * FROM books WHERE " + column + " like '%" + like + "%'");
+		ResultSet rs;
+		if (exact)
+			rs = stmt.executeQuery("SELECT * FROM books WHERE " + column + "='" + where + "'");
+		else
+			rs = stmt.executeQuery("SELECT * FROM books WHERE " + column + " like '%" + where + "%'");
 
 		while (rs.next())
 			items.add(new Item(
@@ -44,19 +48,19 @@ public class SqliteItemDB implements ItemDB {
 	}
 
 	public Item searchByKey(String key) throws SQLException {
-		Item[] items = search("id", key);
+		Item[] items = search("id", key, true);
 		return (items.length > 0) ? items[0] : null;
 	}
 
 	public Item[] searchTitle(String title) throws SQLException {
-		return search("title", title);
+		return search("title", title, false);
 	}
 
 	public Item[] searchAuthor(String author) throws SQLException {
-		return search("author", author);
+		return search("author", author, false);
 	}
 
 	public Item[] searchGenre(String genre) throws SQLException {
-		return search("genre", genre);
+		return search("genre", genre, false);
 	}
 }

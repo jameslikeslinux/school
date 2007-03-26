@@ -8,13 +8,16 @@ public class WelcomeServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 
 		Utils.printHeader(out, "Welcome");
-
-		try {
-			out.println("<p>" + SqliteItemDB.getSingleton().searchByKey("B0002").getTitle() + "</p>");
-		} catch (Exception e) {
-			e.printStackTrace(out);
-		}
-
+		out.println("<h1>Bookstore</h1>");
+		out.println("<form action=\"SearchServlet\" method=\"post\">");
+		out.println("	Query: <input type=\"text\" name=\"query\" /><br />");
+		out.println("	Field: <select name=\"field\">");
+		out.println("		<option value=\"title\">Title</option>");
+		out.println("		<option value=\"author\">Author</option>");
+		out.println("		<option value=\"genre\">Genre</option>");
+		out.println("	</select>");
+		out.println("	<input type=\"submit\" value=\"Search\" />");
+		out.println("</form>");
 		Utils.printFooter(out);
 
 		out.close();

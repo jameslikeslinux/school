@@ -2,10 +2,11 @@
 <project name="proj1" default="compile" basedir="..">
 	<property name="src.dir" value="WEB-INF/src" />
 	<property name="classes.dir" value="WEB-INF/classes" />
+	<property name="dist.dir" value="WEB-INF/dist" />
+	<property name="dist.war" value="${dist.dir}/proj1.war" />
+	<property name="dist.jar" value="${dist.dir}/proj1.jar" />
 	<property name="sqlitejdbc.jar" value="WEB-INF/lib/sqlitejdbc-v033-nested.jar" />
 	<property name="servletapi.jar" value="/usr/share/tomcat-servlet-api-2.5/lib/servlet-api.jar" />
-	<property name="dist.war" value="WEB-INF/proj1.war" />
-	<property name="dist.jar" value="WEB-INF/proj1.jar" />
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
@@ -13,13 +14,13 @@
 	</target>
 
 	<target name="dist" depends="compile">
-		<jar destfile="${dist.jar}" basedir="." excludes="${dist.jar} ${dist.war} ${classes.dir}/*" />
-		<jar destfile="${dist.war}" basedir="." excludes="${dist.war} ${dist.jar} ${src.dir}/*" />
+		<mkdir dir="${dist.dir}" />
+		<jar destfile="${dist.jar}" basedir="." excludes="${dist.dir}/* ${classes.dir}/*" />
+		<jar destfile="${dist.war}" basedir="." excludes="${dist.dir}/* ${src.dir}/*" />
 	</target>
 
 	<target name="clean">
-		<delete file="${dist.war}" />
-		<delete file="${dist.jar}" />
 		<delete dir="${classes.dir}" />
+		<delete dir="${dist.dir}" />
 	</target>
 </project>

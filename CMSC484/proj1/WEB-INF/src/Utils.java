@@ -1,3 +1,4 @@
+import javax.servlet.http.*;
 import java.io.*;
 
 public class Utils {
@@ -18,5 +19,14 @@ public class Utils {
 		out.println("	</body>");
 		out.println("</html>");
 		out.close();
+	}
+
+	public static String getCookieValue(HttpServletRequest request, String name) {
+		Cookie[] cookies = request.getCookies();
+		for (int i = 0; i < cookies.length; i++)
+			if (cookies[i].getName().equals(name))
+				return cookies[i].getValue();
+
+		return "";
 	}
 }

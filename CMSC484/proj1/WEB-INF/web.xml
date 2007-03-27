@@ -53,4 +53,15 @@
 		<servlet-name>ViewCartServlet</servlet-name>
 		<url-pattern>/servlet/ViewCartServlet</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>CheckoutServlet</servlet-name>
+		<servlet-class>CheckoutServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>CheckoutServlet</servlet-name>
+		<url-pattern>/servlet/CheckoutServlet</url-pattern>
+	</servlet-mapping>
+
 </web-app>

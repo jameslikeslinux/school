@@ -17,7 +17,9 @@ public class ConfirmServlet extends HttpServlet {
 			return;
 		}
 
-		response.addCookie(new Cookie("name", name));
+		Cookie cookie = new Cookie("name", name);
+		cookie.setMaxAge(60 * 60 * 24 * 30);	// 30 days
+		response.addCookie(cookie);
 
 		HttpSession session = request.getSession();
 		List cart = (List) session.getAttribute("cart");

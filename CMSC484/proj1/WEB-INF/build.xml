@@ -9,7 +9,7 @@
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpath="${sqlitejdbc.jar}:${servletapi.jar}" source="1.4" target="1.4" />
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpath="${sqlitejdbc.jar}:${servletapi.jar}" source="1.4" target="1.4" debug="on" />
 	</target>
 
 	<target name="dist" depends="compile">

@@ -23,6 +23,10 @@ public class Utils {
 
 	public static String getCookieValue(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
+		
+		if (cookies == null)
+			return "";
+
 		for (int i = 0; i < cookies.length; i++)
 			if (cookies[i].getName().equals(name))
 				return cookies[i].getValue();

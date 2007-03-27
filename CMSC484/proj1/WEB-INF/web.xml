@@ -64,4 +64,13 @@
 		<url-pattern>/servlet/CheckoutServlet</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>ConfirmServlet</servlet-name>
+		<servlet-class>ConfirmServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ConfirmServlet</servlet-name>
+		<url-pattern>/servlet/ConfirmServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

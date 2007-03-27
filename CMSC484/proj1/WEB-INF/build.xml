@@ -4,14 +4,22 @@
 	<property name="classes.dir" value="WEB-INF/classes" />
 	<property name="sqlitejdbc.jar" value="WEB-INF/lib/sqlitejdbc-v033-nested.jar" />
 	<property name="servletapi.jar" value="/usr/share/tomcat-servlet-api-2.5/lib/servlet-api.jar" />
+	<property name="dist.war" value="WEB-INF/proj1.war" />
+	<property name="dist.jar" value="WEB-INF/proj1.jar" />
 
 	<target name="compile">
+		<mkdir dir="${classes.dir}" />
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpath="${sqlitejdbc.jar}:${servletapi.jar}" source="1.4" target="1.4" />
 	</target>
 
+	<target name="dist" depends="compile">
+		<jar destfile="${dist.jar}" basedir="." excludes="${dist.jar} ${dist.war} ${classes.dir}/*" />
+		<jar destfile="${dist.war}" basedir="." excludes="${dist.war} ${dist.jar} ${src.dir}/*" />
+	</target>
+
 	<target name="clean">
-		<delete>
-			<fileset dir="${classes.dir}" includes="**/*" />
-		</delete>
+		<delete file="${dist.war}" />
+		<delete file="${dist.jar}" />
+		<delete dir="${classes.dir}" />
 	</target>
 </project>

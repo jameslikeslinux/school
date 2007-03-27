@@ -17,5 +17,6 @@ public class Utils {
 	public static void printFooter(PrintWriter out) {
 		out.println("	</body>");
 		out.println("</html>");
+		out.close();
 	}
 }

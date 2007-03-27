@@ -9,7 +9,7 @@ public class WelcomeServlet extends HttpServlet {
 
 		Utils.printHeader(out, "Welcome");
 		out.println("<h1>Bookstore</h1>");
-		out.println("<form action=\"SearchServlet\" method=\"post\">");
+		out.println("<form action=\"SearchServlet\" method=\"get\">");
 		out.println("	Query: <input type=\"text\" name=\"query\" /><br />");
 		out.println("	Field: <select name=\"field\">");
 		out.println("		<option value=\"title\">Title</option>");
@@ -19,7 +19,5 @@ public class WelcomeServlet extends HttpServlet {
 		out.println("	<input type=\"submit\" value=\"Search\" />");
 		out.println("</form>");
 		Utils.printFooter(out);
-
-		out.close();
 	}
 }

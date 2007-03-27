@@ -1,9 +1,9 @@
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
-import java.text.*;
+import java.util.*;
 
-public class DisplayItemServlet extends HttpServlet {
+public class AddToCartServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
@@ -24,15 +24,22 @@ public class DisplayItemServlet extends HttpServlet {
 			return;
 		}
 
-		Utils.printHeader(out, item.getAuthor() + " - " + item.getTitle());
-		out.println("<h1>" + item.getAuthor() +  " - " + item.getTitle() + "</h1>");
-		out.println("<ul>");
-		out.println("	<li>Genre: " + item.getGenre() + "</li>");
-		out.println("	<li>Binding: " + item.getBinding() + "</li>");
-		out.println("	<li>Price: " + new DecimalFormat("$#0.00").format(item.getPrice()) + "</li>");
-		out.println("	<li>Availability: " + item.getAvailability() + "</li>");
-		out.println("</ul>");
-		out.println("<a href=\"AddToCartServlet?id=" + item.getId() + "\">Add to Cart</a>");
+		HttpSession session = request.getSession();
+		List cart = (List) session.getAttribute("cart");
+
+		if (cart == null) {
+			cart = new ArrayList();
+			cart.add(item);
+			session.setAttribute("cart", cart);
+		} else if (!cart.contains(item))
+			cart.add(item);
+
+		Utils.printHeader(out, "Added to Cart");
+		out.println("<h1>Added to Cart</h1>");
+		for (int i = 0; i < cart.size(); i++) {
+			item = (Item) cart.get(i);
+			out.println("<a href=\"DisplayItemServlet?id=" + item.getId() + "\">" + item.getTitle() + "</a><br />");
+		}
 		Utils.printFooter(out);
 	}
 }

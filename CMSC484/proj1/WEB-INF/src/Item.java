@@ -1,7 +1,8 @@
 public class Item {
-	private String id, title, author, genre, binding, price, availability;
+	private String id, title, author, genre, binding, availability;
+	private double price;
 
-	public Item(String id, String title, String author, String genre, String binding, String price, String availability) {
+	public Item(String id, String title, String author, String genre, String binding, double price, String availability) {
 		this.id = id;
 		this.title = title;
 		this.author = author;
@@ -51,11 +52,11 @@ public class Item {
 		this.binding = binding;
 	}
 
-	public String getPrice() {
+	public double getPrice() {
 		return price;
 	}
 
-	public void setPrice(String price) {
+	public void setPrice(double price) {
 		this.price = price;
 	}
 
@@ -65,5 +66,12 @@ public class Item {
 
 	public void setAvailability(String availability) {
 		this.availability = availability;
+	}
+
+	public boolean equals(Object o) {
+		if (!(o instanceof Item))
+			return false;
+
+		return getId().equals(((Item) o).getId());
 	}
 }

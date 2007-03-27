@@ -39,7 +39,7 @@ public class SqliteItemDB implements ItemDB {
 				rs.getString("author"),
 				rs.getString("genre"),
 				rs.getString("binding"),
-				rs.getString("price"),
+				rs.getDouble("price"),
 				rs.getString("availability")));
 
 		stmt.close();

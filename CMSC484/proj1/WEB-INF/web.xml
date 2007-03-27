@@ -43,4 +43,14 @@
 		<servlet-name>AddToCartServlet</servlet-name>
 		<url-pattern>/servlet/AddToCartServlet</url-pattern>
 	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ViewCartServlet</servlet-name>
+		<servlet-class>ViewCartServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ViewCartServlet</servlet-name>
+		<url-pattern>/servlet/ViewCartServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

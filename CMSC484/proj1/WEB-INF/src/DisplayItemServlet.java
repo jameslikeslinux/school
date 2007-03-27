@@ -33,6 +33,7 @@ public class DisplayItemServlet extends HttpServlet {
 		out.println("	<li>Availability: " + item.getAvailability() + "</li>");
 		out.println("</ul>");
 		out.println("<a href=\"AddToCartServlet?id=" + item.getId() + "\">Add to Cart</a>");
+		out.println("<a href=\"ViewCartServlet\">View Cart</a>");
 		Utils.printFooter(out);
 	}
 }

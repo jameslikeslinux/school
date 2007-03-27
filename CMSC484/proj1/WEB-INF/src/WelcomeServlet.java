@@ -7,8 +7,13 @@ public class WelcomeServlet extends HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
-		Utils.printHeader(out, "Welcome");
+		Utils.printHeader(out, "Bookstore");
 		out.println("<h1>Bookstore</h1>");
+		
+		String name = Utils.getCookieValue(request, "name");
+		if (!name.equals(""))
+			out.println("<h2>Welcome, " + name + "!</h2>");
+
 		out.println("<form action=\"SearchServlet\" method=\"get\">");
 		out.println("	Query: <input type=\"text\" name=\"query\" /><br />");
 		out.println("	Field: <select name=\"field\">");

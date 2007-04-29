@@ -8,11 +8,11 @@ import java.security.*;
 public class Utils {
 	public static void doHeader(HttpServletRequest request, HttpServletResponse response, String title) throws ServletException, IOException {
 		HttpSession session = request.getSession();
-		Object username = session.getAttribute("username");
+		Object userData = session.getAttribute("userData");
 
-		request.setAttribute("pageTitle", new PageTitle("Home"));
+		request.setAttribute("pageTitle", new PageTitle(title));
 		request.getRequestDispatcher("/WEB-INF/jsp/header.jsp").include(request, response);
-		request.getRequestDispatcher((username == null) ? "/WEB-INF/jsp/loggedoutheader.jsp" : "/WEB-INF/jsp/loggedinheader.jsp").include(request, response);
+		request.getRequestDispatcher((userData == null) ? "/WEB-INF/jsp/loggedoutheader.jsp" : "/WEB-INF/jsp/loggedinheader.jsp").include(request, response);
 	}
 
 	public static void doFooter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

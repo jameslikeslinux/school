@@ -25,15 +25,19 @@ public class CreateAccountServlet extends HttpServlet {
 				error = new Error("All fields must be filled in.");
 			else if (!password1.equals(password2))
 				error = new Error("The passwords are not equal.");
-			else if (!database.isUsernameAvailable(username)) 
+			else if (database.getUid(username) > -1) 
 				error = new Error("The requested username already exists.");
-			else
+			else {
 				database.createUser(username, password1, name);
+				String url = request.getRequestURL().toString();
+				url = url.substring(0, url.lastIndexOf('/'));
+				response.sendRedirect(url + "/org.thestaticvoid.cmsc484blog.LoginServlet");
+			}
 		} catch (Exception e) {
 			error = new Error(e.getMessage());
 		}
 
-		Utils.doHeader(request, response, "Home");
+		Utils.doHeader(request, response, "Create Account");
 		
 		request.setAttribute("error", error);
 		request.setAttribute("formData", formData);

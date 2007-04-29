@@ -47,18 +47,29 @@ public class SqliteDb {
 		return (Article[]) articles.toArray(new Article[]{});
 	}
 
-	public boolean isUsernameAvailable(String username) throws SQLException {
+	public int getUid(String username) throws SQLException {
 		Statement stmt = con.createStatement();
-		ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='" + username + "'");
-		boolean available = !rs.next();
+		ResultSet rs = stmt.executeQuery("SELECT id FROM users WHERE username='" + username + "'");
+		int uid = -1;
+		if (rs.next())
+			uid = rs.getInt("id");
 		stmt.close();
 
-		return available;
+		return uid;
 	}
 
 	public void createUser(String username, String password, String name) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT INTO users (username,password,name) VALUES ('" + username + "','" + Utils.md5(password) + "','" + name + "')");
 		stmt.close();
+	}
+
+	public boolean isCorrectPassword(String username, String password) throws SQLException {
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='" + username + "' AND password='" + Utils.md5(password) + "'");
+		boolean correct = rs.next();
+		stmt.close();
+
+		return correct;
 	}
 }

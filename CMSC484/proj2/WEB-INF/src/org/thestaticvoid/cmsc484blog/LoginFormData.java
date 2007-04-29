@@ -1,16 +1,10 @@
 package org.thestaticvoid.cmsc484blog;
 
-public class UserData {
-	private int uid;
+public class LoginFormData {
 	private String username;
 
-	public UserData(int uid, String username) {
-		this.uid = uid;
+	public LoginFormData(String username) {
 		this.username = username;
-	}
-	
-	public int getUid() {
-		return uid;
 	}
 
 	public String getUsername() {

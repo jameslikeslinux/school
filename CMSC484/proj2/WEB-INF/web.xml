@@ -4,4 +4,13 @@
 	"http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+	<servlet>
+		<servlet-name>ViewArticlesServlet</servlet-name>
+		<servlet-class>org.thestaticvoid.cmsc484blog.ViewArticlesServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ViewArticlesServlet</servlet-name>
+		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.ViewArticlesServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

@@ -13,4 +13,14 @@
 		<servlet-name>ViewArticlesServlet</servlet-name>
 		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.ViewArticlesServlet</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>CreateAccountServlet</servlet-name>
+		<servlet-class>org.thestaticvoid.cmsc484blog.CreateAccountServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>CreateAccountServlet</servlet-name>
+		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.CreateAccountServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

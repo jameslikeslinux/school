@@ -11,7 +11,7 @@ public class SqliteDb {
 
 	private SqliteDb() throws ClassNotFoundException, SQLException {
 		Class.forName("org.sqlite.JDBC");
-		con = DriverManager.getConnection("jdbc:sqlite:" + new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getParent() + File.separator + "db" + File.separator + "proj2.db");
+		con = DriverManager.getConnection("jdbc:sqlite:" + new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getParentFile().getParentFile().getParentFile().getParent() + File.separator + "db" + File.separator + "proj2.db");
 	}
 
 	protected void finalize() throws Throwable {
@@ -45,5 +45,20 @@ public class SqliteDb {
 		stmt.close();
 
 		return (Article[]) articles.toArray(new Article[]{});
+	}
+
+	public boolean isUsernameAvailable(String username) throws SQLException {
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='" + username + "'");
+		boolean available = !rs.next();
+		stmt.close();
+
+		return available;
+	}
+
+	public void createUser(String username, String password, String name) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("INSERT INTO users (username,password,name) VALUES ('" + username + "','" + Utils.md5(password) + "','" + name + "')");
+		stmt.close();
 	}
 }

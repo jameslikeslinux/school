@@ -3,7 +3,7 @@
 	Article[] articles = (Article[]) request.getAttribute("articles");
 	for (int i = articles.length - 1; i >= 0; i--) {
 %>
-		<h4><a href="org.thestaticvoid.cmsc484blog.ViewArticlesServlet?aid=<%= articles[i].getId() %>"><%= articles[i].getTitle() %></a></h4>
+		<a href="org.thestaticvoid.cmsc484blog.ViewArticlesServlet?aid=<%= articles[i].getId() %>"><h4><%= articles[i].getTitle() %></h4></a>
 		<h5><%= articles[i].getUsername() %></h5>
 		<h6><%= articles[i].getTimestamp() %></h6>
 		<p><%= articles[i].getContent() %></p>

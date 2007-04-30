@@ -10,4 +10,4 @@
 	</head>
 
 	<body>
-		<h1>BLAG</h1>
+		<a href="org.thestaticvoid.cmsc484blog.ViewArticlesServlet"><h1>BLAG</h1></a>

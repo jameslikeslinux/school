@@ -2,7 +2,8 @@ CREATE TABLE users (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	username VARCHAR NOT NULL,
 	password VARCHAR NOT NULL,
-	name VARCHAR NOT NULL
+	name VARCHAR NOT NULL,
+	invert BOOLEAN NOT NULL
 );
 
 CREATE TABLE articles (
@@ -20,9 +21,4 @@ CREATE TABLE comments (
 	datetime DATETIME NOT NULL,
 	title VARCHAR,
 	content TEXT
-);
-
-CREATE TABLE ignore (
-	uid INTEGER NOT NULL,
-	ignoreuid INTEGER NOT NULL
 );

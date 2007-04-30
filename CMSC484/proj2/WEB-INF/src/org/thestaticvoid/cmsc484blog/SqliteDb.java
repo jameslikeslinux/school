@@ -88,7 +88,7 @@ public class SqliteDb {
 
 	public void createUser(String username, String password, String name) throws SQLException {
 		Statement stmt = con.createStatement();
-		stmt.executeUpdate("INSERT INTO users (username,password,name) VALUES ('" + username + "','" + Utils.md5(password) + "','" + name + "')");
+		stmt.executeUpdate("INSERT INTO users (username,password,name,invert) VALUES ('" + username + "','" + Utils.md5(password) + "','" + name + "',0)");
 		stmt.close();
 	}
 
@@ -99,5 +99,17 @@ public class SqliteDb {
 		stmt.close();
 
 		return correct;
+	}
+
+	public void addArticle(int uid, String title, String content) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("INSERT INTO articles (uid,datetime,title,content) VALUES (" + uid + ",DATETIME('now'),'" + title + "','" + content + "')");
+		stmt.close();
+	}
+
+	public void addComment(int aid, int uid, String title, String content) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("INSERT INTO comments (aid,uid,datetime,title,content) VALUES (" + aid + "," + uid + ",DATETIME('now'),'" + title + "','" + content + "')");
+		stmt.close();
 	}
 }

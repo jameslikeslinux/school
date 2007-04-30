@@ -7,7 +7,7 @@
 <h3>Comments</h3>
 <%
 	Article[] comments = article.getComments();
-	for (int i = 0; i < comments.length; i++) {
+	for (int i = comments.length - 1; i >= 0; i--) {
 %>
 		<h4><%= comments[i].getTitle() %></h4>
 		<h5><%= comments[i].getUsername() %></h5>

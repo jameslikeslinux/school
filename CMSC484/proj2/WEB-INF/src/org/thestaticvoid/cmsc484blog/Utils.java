@@ -10,7 +10,15 @@ public class Utils {
 		HttpSession session = request.getSession();
 		Object userData = session.getAttribute("userData");
 
-		request.setAttribute("pageTitle", new PageTitle(title));
+		boolean invert = false;
+		if (userData != null)
+			try {
+				invert = SqliteDb.getSingleton().isInverted(((UserData) userData).getUid());
+			} catch (Exception e) {
+
+			}
+
+		request.setAttribute("pageTitle", new PageTitle(title, invert ? "../black.css" : "../white.css"));
 		request.getRequestDispatcher("/WEB-INF/jsp/header.jsp").include(request, response);
 		request.getRequestDispatcher((userData == null) ? "/WEB-INF/jsp/loggedoutheader.jsp" : "/WEB-INF/jsp/loggedinheader.jsp").include(request, response);
 	}

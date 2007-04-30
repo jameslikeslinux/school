@@ -6,7 +6,7 @@
 		<jsp:useBean id="pageTitle" type="org.thestaticvoid.cmsc484blog.PageTitle" scope="request" />
 		<title>BLAG - <jsp:getProperty name="pageTitle" property="pageTitle" /></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link href="../master.css" rel="stylesheet" type="text/css" />
+		<link href="<jsp:getProperty name="pageTitle" property="css" />" rel="stylesheet" type="text/css" />
 	</head>
 
 	<body>

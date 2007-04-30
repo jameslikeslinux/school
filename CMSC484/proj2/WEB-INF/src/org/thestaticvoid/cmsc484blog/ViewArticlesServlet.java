@@ -37,7 +37,7 @@ public class ViewArticlesServlet extends HttpServlet {
 			Utils.doFooter(request, response);
 		} catch (Exception e) {
 			request.setAttribute("e", e);
-			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").forward(request, response);
+			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").include(request, response);
 		}
 	}
 }

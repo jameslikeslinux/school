@@ -112,4 +112,21 @@ public class SqliteDb {
 		stmt.executeUpdate("INSERT INTO comments (aid,uid,datetime,title,content) VALUES (" + aid + "," + uid + ",DATETIME('now'),'" + title + "','" + content + "')");
 		stmt.close();
 	}
+
+	public boolean isInverted(int uid) throws SQLException {
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT invert FROM users WHERE id=" + uid);
+		if (!rs.next())
+			return false;
+		boolean invert = rs.getBoolean("invert");
+		stmt.close();
+
+		return invert;
+	}
+
+	public void setInverted(int uid, boolean invert) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("UPDATE users SET invert=" + (invert ? 1 : 0) + " WHERE id=" + uid);
+		stmt.close();
+	}
 }

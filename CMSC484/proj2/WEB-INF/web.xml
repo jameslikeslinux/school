@@ -53,4 +53,14 @@
 		<servlet-name>PostArticleServlet</servlet-name>
 		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.PostArticleServlet</url-pattern>
 	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>PreferencesServlet</servlet-name>
+		<servlet-class>org.thestaticvoid.cmsc484blog.PreferencesServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>PreferencesServlet</servlet-name>
+		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.PreferencesServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

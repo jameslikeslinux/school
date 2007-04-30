@@ -27,7 +27,7 @@ public class LoginServlet extends HttpServlet {
 				error = new Error("Invalid username or password.");
 		} catch (Exception e) {
 			request.setAttribute("e", e);
-			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").forward(request, response);
+			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").include(request, response);
 		}
 
 		Utils.doHeader(request, response, "Login");

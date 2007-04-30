@@ -34,7 +34,8 @@ public class CreateAccountServlet extends HttpServlet {
 				response.sendRedirect(url + "/org.thestaticvoid.cmsc484blog.LoginServlet");
 			}
 		} catch (Exception e) {
-			error = new Error(e.getMessage());
+			request.setAttribute("e", e);
+			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").forward(request, response);
 		}
 
 		Utils.doHeader(request, response, "Create Account");

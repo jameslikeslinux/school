@@ -25,26 +25,54 @@ public class SqliteDb {
 		return singleton;
 	}
 
+	public Article[] getComments(int aid) throws SQLException {
+		List comments = new ArrayList();
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT comments.id,username,datetime,title,content FROM users,comments WHERE users.id=uid AND aid=" + aid);
+
+		while (rs.next())
+			comments.add(new Article(
+				rs.getInt("id"),
+				rs.getString("username"),
+				rs.getString("datetime"),
+				rs.getString("title"),
+				rs.getString("content"),
+				new Article[]{}));
+
+		stmt.close();
+
+		return (Article[]) comments.toArray(new Article[]{});
+	}
+
 	public Article[] getAllArticles() throws SQLException {
 		List articles = new ArrayList();
 
 		Statement stmt = con.createStatement();
-		ResultSet rs = stmt.executeQuery("SELECT username,datetime,title,content FROM users,articles WHERE users.id=uid");
+		ResultSet rs = stmt.executeQuery("SELECT articles.id,username,datetime,title,content FROM users,articles WHERE users.id=uid");
 
-		while (rs.next()) {
-			java.sql.Date date = rs.getDate("datetime");
-			java.sql.Time time = rs.getTime("datetime");
-
+		while (rs.next())
 			articles.add(new Article(
+				rs.getInt("id"),
 				rs.getString("username"),
-				DateFormat.getDateInstance(DateFormat.MEDIUM).format(date) + " at " + DateFormat.getDateInstance(DateFormat.SHORT).format(time),
+				rs.getString("datetime"),
 				rs.getString("title"),
-				rs.getString("content")));
-		}
+				rs.getString("content"),
+				getComments(rs.getInt("id"))));
 
 		stmt.close();
 
 		return (Article[]) articles.toArray(new Article[]{});
+	}
+
+	// This is a stupid lazy hack
+	public Article getArticle(int aid) throws SQLException {
+		Article[] articles = getAllArticles();
+		for (int i = 0; i < articles.length; i++)
+			if (articles[i].getId() == aid)
+				return articles[i];
+
+		return null;
 	}
 
 	public int getUid(String username) throws SQLException {

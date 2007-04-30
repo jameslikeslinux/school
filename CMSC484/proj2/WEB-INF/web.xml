@@ -34,4 +34,13 @@
 		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.LoginServlet</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>LogoutServlet</servlet-name>
+		<servlet-class>org.thestaticvoid.cmsc484blog.LogoutServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>LogoutServlet</servlet-name>
+		<url-pattern>/servlet/org.thestaticvoid.cmsc484blog.LogoutServlet</url-pattern>
+	</servlet-mapping>
 </web-app>

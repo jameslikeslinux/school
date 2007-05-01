@@ -27,7 +27,11 @@ public class Utils {
 
 			}
 
-		request.setAttribute("pageTitle", new PageTitle(title, invert ? "../white.css" : "../black.css"));
+		PageTitle pageTitle = new PageTitle();
+		pageTitle.setPageTitle(title);
+		pageTitle.setCss(invert ? "../white.css" : "../black.css");
+		request.setAttribute("pageTitle", pageTitle);
+
 		request.getRequestDispatcher("/WEB-INF/jsp/header.jsp").include(request, response);
 		request.getRequestDispatcher((userData == null) ? "/WEB-INF/jsp/loggedoutheader.jsp" : "/WEB-INF/jsp/loggedinheader.jsp").include(request, response);
 	}

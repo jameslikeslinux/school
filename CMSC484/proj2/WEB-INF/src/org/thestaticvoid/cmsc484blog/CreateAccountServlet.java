@@ -19,9 +19,12 @@ public class CreateAccountServlet extends HttpServlet {
 		String name = request.getParameter("name");
 
 		// set initial states
-		Error error = new Error("");
-		CreateAccountFormData formData = new CreateAccountFormData((username == null) ? "" : "" + username, (name == null) ? "" : "" + name);
+		Error error = new Error();
+		error.setError("");
 
+		CreateAccountFormData formData = new CreateAccountFormData();
+		formData.setUsername((username == null) ? "" : "" + username);
+		formData.setName((name == null) ? "" : "" + name);
 
 		try {
 			SqliteDb database = SqliteDb.getSingleton();
@@ -30,11 +33,11 @@ public class CreateAccountServlet extends HttpServlet {
 			    password1 == null || password1.equals("") ||
 			    password2 == null || password2.equals("") ||
 			    name == null || name.equals(""))
-				error = new Error("All fields must be filled in.");
+				error.setError("All fields must be filled in.");
 			else if (!password1.equals(password2))
-				error = new Error("The passwords are not equal.");
+				error.setError("The passwords are not equal.");
 			else if (database.getUid(username) > -1) 
-				error = new Error("The requested username already exists.");
+				error.setError("The requested username already exists.");
 			else {
 				database.createUser(username, password1, name);
 				String url = request.getRequestURL().toString();

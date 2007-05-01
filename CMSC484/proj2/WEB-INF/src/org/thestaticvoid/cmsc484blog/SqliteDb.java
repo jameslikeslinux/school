@@ -42,15 +42,17 @@ public class SqliteDb {
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT comments.id,username,datetime,title,content FROM users,comments WHERE users.id=uid AND aid=" + aid);
 
-		while (rs.next())
-			comments.add(new Article(
-				rs.getInt("id"),
-				rs.getString("username"),
-				rs.getString("datetime"),
-				rs.getString("title"),
-				rs.getString("content"),
-				new Article[]{}));
-
+		while (rs.next()) {
+			Article comment = new Article();
+			comment.setId(rs.getInt("id"));
+			comment.setUsername(rs.getString("username"));
+			comment.setTimestamp(rs.getString("datetime"));
+			comment.setTitle(rs.getString("title"));
+			comment.setContent(rs.getString("content"));
+			comment.setComments(new Article[]{});
+			comments.add(comment);
+		}
+			
 		stmt.close();
 
 		return (Article[]) comments.toArray(new Article[]{});
@@ -66,14 +68,16 @@ public class SqliteDb {
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT articles.id,username,datetime,title,content FROM users,articles WHERE users.id=uid");
 
-		while (rs.next())
-			articles.add(new Article(
-				rs.getInt("id"),
-				rs.getString("username"),
-				rs.getString("datetime"),
-				rs.getString("title"),
-				rs.getString("content"),
-				getComments(rs.getInt("id"))));
+		while (rs.next()) {
+			Article article = new Article();
+			article.setId(rs.getInt("id"));
+			article.setUsername(rs.getString("username"));
+			article.setTimestamp(rs.getString("datetime"));
+			article.setTitle(rs.getString("title"));
+			article.setContent(rs.getString("content"));
+			article.setComments(getComments(rs.getInt("id")));
+			articles.add(article);
+		}
 
 		stmt.close();
 

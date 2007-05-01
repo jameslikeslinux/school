@@ -32,8 +32,11 @@ public class PreferencesServlet extends HttpServlet {
 			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").include(request, response);
 		}
 
+		PreferencesFormData formData = new PreferencesFormData();
+		formData.setInvert(invert);
+		request.setAttribute("formData", formData);
+
 		Utils.doHeader(request, response, "Preferences");
-		request.setAttribute("formData", new PreferencesFormData(invert));
 		request.getRequestDispatcher("/WEB-INF/jsp/preferencesform.jsp").include(request, response);
 		Utils.doFooter(request, response);
 	}

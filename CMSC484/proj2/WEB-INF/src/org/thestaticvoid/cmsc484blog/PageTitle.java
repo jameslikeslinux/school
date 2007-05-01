@@ -10,16 +10,19 @@ public class PageTitle {
 	private String pageTitle;
 	private String css;
 
-	public PageTitle(String pageTitle, String css) {
-		this.pageTitle = pageTitle;
-		this.css = css;
-	}
-
 	public String getPageTitle() {
 		return pageTitle;
 	}
 
+	public void setPageTitle(String pageTitle) {
+		this.pageTitle = pageTitle;
+	}
+
 	public String getCss() {
 		return css;
+	}
+
+	public void setCss(String css) {
+		this.css = css;
 	}
 }

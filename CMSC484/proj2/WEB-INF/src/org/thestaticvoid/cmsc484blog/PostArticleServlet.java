@@ -29,8 +29,11 @@ public class PostArticleServlet extends HttpServlet {
 		String title = request.getParameter("title");
 		String content = request.getParameter("content");
 
-		Error error = new Error("");
-		PostArticleFormData formData = new PostArticleFormData((title == null) ? "" : title, (content == null) ? "" : content);
+		Error error = new Error();
+		error.setError("");
+		PostArticleFormData formData = new PostArticleFormData();
+		formData.setTitle((title == null) ? "" : title);
+		formData.setContent((content == null) ? "" : content);
 
 		if (content != null)	// replace some potentially bad input
 			content = content.replaceAll("\n", "<br />").replaceAll("\'", "\\\'");
@@ -40,10 +43,10 @@ public class PostArticleServlet extends HttpServlet {
 						
 			if (title == null || title.equals("") ||
 			    content == null || content.equals(""))
-				error = new Error("All fields must be filled in.");
+				error.setError("All fields must be filled in.");
 			else if (aid > -1) {	// making comment
 				if (database.getArticle(aid) == null)
-					error = new Error("The specified article does not exist.");
+					error.setError("The specified article does not exist.");
 				else {
 					database.addComment(aid, ((UserData) userData).getUid(), title, content);
 					String url = request.getRequestURL().toString();

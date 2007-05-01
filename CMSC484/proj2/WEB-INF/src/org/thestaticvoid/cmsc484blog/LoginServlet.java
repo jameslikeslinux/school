@@ -4,6 +4,13 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 
+/**
+ * Servlet to handle all aspects of logging in, including displaying and 
+ * processing form data.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class LoginServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String username = request.getParameter("username");

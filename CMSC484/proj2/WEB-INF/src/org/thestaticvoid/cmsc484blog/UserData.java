@@ -1,5 +1,11 @@
 package org.thestaticvoid.cmsc484blog;
 
+/**
+ * Information about the logged-in user to be stored in the session.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class UserData {
 	private int uid;
 	private String username;

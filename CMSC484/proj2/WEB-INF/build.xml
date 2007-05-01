@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="proj1" default="compile" basedir="..">
+<project name="proj1" default="doc" basedir="..">
 	<property name="src.dir" value="WEB-INF/src" />
 	<property name="classes.dir" value="WEB-INF/classes" />
+	<property name="doc.dir" value="WEB-INF/doc" />
 	<property name="dist.dir" value="WEB-INF/dist" />
 	<property name="dist.war" value="${dist.dir}/proj1.war" />
 	<property name="dist.jar" value="${dist.dir}/proj1.jar" />
@@ -13,7 +14,12 @@
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpath="${sqlitejdbc.jar}:${servletapi.jar}" source="1.4" target="1.4" debug="on" />
 	</target>
 
-	<target name="dist" depends="compile">
+	<target name="doc" depends="compile">
+		<mkdir dir="${doc.dir}" />
+		<javadoc sourcepath="${src.dir}" destdir="${doc.dir}" />
+	</target>
+
+	<target name="dist" depends="doc">
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.jar}" basedir="." excludes="${dist.dir}/* ${classes.dir}/*" />
 		<jar destfile="${dist.war}" basedir="." excludes="${dist.dir}/* ${src.dir}/*" />
@@ -21,6 +27,7 @@
 
 	<target name="clean">
 		<delete dir="${classes.dir}" />
+		<delete dir="${doc.dir}" />
 		<delete dir="${dist.dir}" />
 	</target>
 </project>

@@ -4,6 +4,13 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 
+/**
+ * Main page servlet shows all articles in the database.  Also accepts
+ * <code>aid</code> parameter to show only one article and its comments.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class ViewArticlesServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		int aid = -1;

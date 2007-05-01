@@ -4,6 +4,12 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 
+/**
+ * Servlet to handle all aspects of posting articles and comments.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class PostArticleServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Object userData = request.getSession().getAttribute("userData");

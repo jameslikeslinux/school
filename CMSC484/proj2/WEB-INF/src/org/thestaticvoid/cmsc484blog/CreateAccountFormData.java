@@ -1,5 +1,11 @@
 package org.thestaticvoid.cmsc484blog;
 
+/**
+ * Used to pass data back to a form when an error occured.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class CreateAccountFormData {
 	private String username, name;
 

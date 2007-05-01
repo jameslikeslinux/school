@@ -1,5 +1,11 @@
 package org.thestaticvoid.cmsc484blog;
 
+/**
+ * Represents an article or a comment.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class Article {
 	private int id;
 	private String username, timestamp, title, content;
@@ -34,6 +40,9 @@ public class Article {
 		return content;
 	}
 
+	/**
+	 * @return	Comments in the form of an array if this is an article, <code>null</code> if this is a comment.
+	 */
 	public Article[] getComments() {
 		return comments;
 	}

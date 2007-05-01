@@ -5,6 +5,12 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
+/**
+ * Provides high level access to the database.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class SqliteDb {
 	private static SqliteDb singleton;
 	private Connection con;
@@ -25,6 +31,11 @@ public class SqliteDb {
 		return singleton;
 	}
 
+	/**
+	 * @param aid	The positive unique key for the article.
+	 * @return	All comments for the given article.
+	 * @see		Article
+	 */
 	public Article[] getComments(int aid) throws SQLException {
 		List comments = new ArrayList();
 
@@ -45,6 +56,10 @@ public class SqliteDb {
 		return (Article[]) comments.toArray(new Article[]{});
 	}
 
+	/**
+	 * @return	All articles in the database.
+	 * @see		Article
+	 */
 	public Article[] getAllArticles() throws SQLException {
 		List articles = new ArrayList();
 
@@ -65,8 +80,13 @@ public class SqliteDb {
 		return (Article[]) articles.toArray(new Article[]{});
 	}
 
-	// This is a stupid lazy hack
+	/**
+	 * @param aid	The positive unique key for the article.
+	 * @return	The requested article.
+	 * @see		Article
+	 */
 	public Article getArticle(int aid) throws SQLException {
+		// This is a stupid lazy hack
 		Article[] articles = getAllArticles();
 		for (int i = 0; i < articles.length; i++)
 			if (articles[i].getId() == aid)
@@ -75,6 +95,11 @@ public class SqliteDb {
 		return null;
 	}
 
+	/**
+	 * @param username	The username for which you want to know the uid.
+	 * @return		The positive unique id for the user or -1 if the
+	 * 			user does not exist.
+	 */
 	public int getUid(String username) throws SQLException {
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT id FROM users WHERE username='" + username + "'");
@@ -86,12 +111,22 @@ public class SqliteDb {
 		return uid;
 	}
 
+	/**
+	 * Create a user in the database.  Does not check if user exists.
+	 *
+	 * @param password	Unhashed password.
+	 */
 	public void createUser(String username, String password, String name) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT INTO users (username,password,name,invert) VALUES ('" + username + "','" + Utils.md5(password) + "','" + name + "',0)");
 		stmt.close();
 	}
 
+	/**
+	 * @param password	Unhashed password.
+	 * @return		<code>true</code> if correct u/p combo,\
+	 * 			<code>false</code> otherwise.
+	 */
 	public boolean isCorrectPassword(String username, String password) throws SQLException {
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='" + username + "' AND password='" + Utils.md5(password) + "'");
@@ -101,18 +136,36 @@ public class SqliteDb {
 		return correct;
 	}
 
+	/**
+	 * Add an article to the database.  Parameters not checked.
+	 *
+	 * @param uid		The id of the author of the article.
+	 * @param title		The title of the article.
+	 * @param content	The content of the article.
+	 */
 	public void addArticle(int uid, String title, String content) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT INTO articles (uid,datetime,title,content) VALUES (" + uid + ",DATETIME('now'),'" + title + "','" + content + "')");
 		stmt.close();
 	}
 
+	/**
+	 * Add a comment to an article.  Parameters not checked.
+	 *
+	 * @param aid		The id of the article on which to comment.
+	 * @param uid		The id of the author making the comment.
+	 * @param title		The title of the comment.
+	 * @param content	The content of the comment.
+	 */
 	public void addComment(int aid, int uid, String title, String content) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT INTO comments (aid,uid,datetime,title,content) VALUES (" + aid + "," + uid + ",DATETIME('now'),'" + title + "','" + content + "')");
 		stmt.close();
 	}
-
+	
+	/**
+	 * Gets the user's style preference.  uid validity not checked.
+	 */
 	public boolean isInverted(int uid) throws SQLException {
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT invert FROM users WHERE id=" + uid);
@@ -124,6 +177,9 @@ public class SqliteDb {
 		return invert;
 	}
 
+	/**
+	 * Sets the user's style preference.  uid validity not checked.
+	 */
 	public void setInverted(int uid, boolean invert) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("UPDATE users SET invert=" + (invert ? 1 : 0) + " WHERE id=" + uid);

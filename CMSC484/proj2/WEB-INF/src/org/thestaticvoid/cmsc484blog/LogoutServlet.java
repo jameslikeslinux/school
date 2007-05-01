@@ -4,6 +4,12 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 
+/**
+ * Servlet to delete the user data from the current session.
+ *
+ * @author	James Lee
+ * @version	20070501
+ */
 public class LogoutServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.getSession().removeAttribute("userData");

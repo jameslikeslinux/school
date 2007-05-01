@@ -13,7 +13,7 @@ import java.io.*;
 public class PreferencesServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Object userData = request.getSession().getAttribute("userData");
-		if (userData == null) {
+		if (userData == null) {	// not logged in
 			String url = request.getRequestURL().toString();
 			url = url.substring(0, url.lastIndexOf('/'));
 			response.sendRedirect(url + "/org.thestaticvoid.cmsc484blog.LoginServlet");
@@ -22,10 +22,10 @@ public class PreferencesServlet extends HttpServlet {
 		boolean invert = false;
 		try {
 			SqliteDb database = SqliteDb.getSingleton();
-			if (request.getParameter("submit") != null) {
+			if (request.getParameter("submit") != null) {	// submitted form
 				invert = request.getParameter("invert") != null;
 				database.setInverted(((UserData) userData).getUid(), invert);
-			} else
+			} else						// just displaying form
 				invert = database.isInverted(((UserData) userData).getUid());
 		} catch (Exception e) {
 			request.setAttribute("e", e);

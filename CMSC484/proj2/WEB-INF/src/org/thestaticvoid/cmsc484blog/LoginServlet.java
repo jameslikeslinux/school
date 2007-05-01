@@ -26,6 +26,7 @@ public class LoginServlet extends HttpServlet {
 			    password == null || password.equals(""))
 				error = new Error("All fields must be filled in.");
 			else if (database.isCorrectPassword(username, password)) {
+				// set user data in session
 				request.getSession().setAttribute("userData", new UserData(database.getUid(username), username));
 				String url = request.getRequestURL().toString();
 				url = url.substring(0, url.lastIndexOf('/'));

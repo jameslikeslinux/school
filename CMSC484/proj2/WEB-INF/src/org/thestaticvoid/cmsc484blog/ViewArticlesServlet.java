@@ -25,7 +25,7 @@ public class ViewArticlesServlet extends HttpServlet {
 			database = SqliteDb.getSingleton();
 
 
-			if (aid > -1) {
+			if (aid > -1) {	// view article and comments
 				Article article = database.getArticle(aid);
 				if (article == null) {
 					Utils.doHeader(request, response, "Bad article");
@@ -35,7 +35,7 @@ public class ViewArticlesServlet extends HttpServlet {
 					request.setAttribute("article", article);
 					request.getRequestDispatcher("/WEB-INF/jsp/viewarticle.jsp").include(request, response);
 				}
-			} else {
+			} else {	// view all articles
 				Utils.doHeader(request, response, "Home");
 				request.setAttribute("articles", database.getAllArticles());
 				request.getRequestDispatcher("/WEB-INF/jsp/viewarticles.jsp").include(request, response);

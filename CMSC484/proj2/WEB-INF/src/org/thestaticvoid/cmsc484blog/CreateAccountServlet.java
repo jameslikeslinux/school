@@ -18,6 +18,7 @@ public class CreateAccountServlet extends HttpServlet {
 		String password2 = request.getParameter("password2");
 		String name = request.getParameter("name");
 
+		// set initial states
 		Error error = new Error("");
 		CreateAccountFormData formData = new CreateAccountFormData((username == null) ? "" : "" + username, (name == null) ? "" : "" + name);
 
@@ -40,7 +41,7 @@ public class CreateAccountServlet extends HttpServlet {
 				url = url.substring(0, url.lastIndexOf('/'));
 				response.sendRedirect(url + "/org.thestaticvoid.cmsc484blog.LoginServlet");
 			}
-		} catch (Exception e) {
+		} catch (Exception e) {	// bail on all errors (mostly sql errors)
 			request.setAttribute("e", e);
 			request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").include(request, response);
 		}

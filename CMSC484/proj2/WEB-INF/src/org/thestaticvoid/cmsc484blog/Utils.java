@@ -20,7 +20,7 @@ public class Utils {
 		Object userData = session.getAttribute("userData");
 
 		boolean invert = false;
-		if (userData != null)
+		if (userData != null)	// get style preferences
 			try {
 				invert = SqliteDb.getSingleton().isInverted(((UserData) userData).getUid());
 			} catch (Exception e) {
@@ -43,7 +43,7 @@ public class Utils {
 	 * Used to hash passwords for the database.
 	 *
 	 * @param string	Any valid string.
-	 * @return		36 character hex checksum
+	 * @return		32 character hex checksum
 	 */
 	public static String md5(String string) {
 		try {

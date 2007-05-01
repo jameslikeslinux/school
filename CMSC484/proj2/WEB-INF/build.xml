@@ -4,8 +4,8 @@
 	<property name="classes.dir" value="WEB-INF/classes" />
 	<property name="doc.dir" value="WEB-INF/doc" />
 	<property name="dist.dir" value="WEB-INF/dist" />
-	<property name="dist.war" value="${dist.dir}/proj1.war" />
-	<property name="dist.jar" value="${dist.dir}/proj1.jar" />
+	<property name="dist.war" value="${dist.dir}/proj2.war" />
+	<property name="dist.jar" value="${dist.dir}/proj2.jar" />
 	<property name="sqlitejdbc.jar" value="WEB-INF/lib/sqlitejdbc-v033-nested.jar" />
 	<property name="servletapi.jar" value="/usr/share/tomcat-servlet-api-2.5/lib/servlet-api.jar" />
 
@@ -21,8 +21,8 @@
 
 	<target name="dist" depends="doc">
 		<mkdir dir="${dist.dir}" />
-		<jar destfile="${dist.jar}" basedir="." excludes="${dist.dir}/* ${classes.dir}/*" />
-		<jar destfile="${dist.war}" basedir="." excludes="${dist.dir}/* ${src.dir}/*" />
+		<jar destfile="${dist.jar}" basedir="." excludes="${dist.dir}/** ${classes.dir}/**" />
+		<jar destfile="${dist.war}" basedir="." excludes="${dist.dir}/** ${src.dir}/**" />
 	</target>
 
 	<target name="clean">

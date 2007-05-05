@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="msync" default="compile" basedir=".">
+	<target name="compile">
+		<mkdir dir="build" />
+		<javac srcdir="src" destdir="build" source="1.4" target="1.4" debug="on" />
+	</target>
+
+	<target name="run" depends="compile">
+		<java classname="org.thestaticvoid.msync.Msync" fork="true">
+			<classpath>
+				<pathelement path="build" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+</project>

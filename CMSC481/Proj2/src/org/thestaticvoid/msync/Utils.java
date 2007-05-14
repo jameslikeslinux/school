@@ -4,6 +4,7 @@ import java.io.*;
 import java.security.*;
 
 public class Utils {
+	
 	public static String md5(File file) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("MD5");

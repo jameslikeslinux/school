@@ -276,7 +276,10 @@ public class Msync {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {		
-		new Msync("/home/jlee/Backup");
+	public static void main(String[] args) throws IOException {
+		if (args.length == 1 && new File(args[0]).isDirectory())
+			new Msync(args[0]);
+		else
+			System.err.println("Usage: Msync <dir>");
 	}
 }

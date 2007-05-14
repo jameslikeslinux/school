@@ -1,0 +1,33 @@
+Multicast Synchronization
+Project 2
+
+James Lee
+jlee23@umbc.edu
+
+Introduction
+
+I have named this project msync.  It is written in Java.  The source resides in the org.thestaticvoid.msync package.  The purpose was to syncrhonize file between all hosts that join the multicast group.
+
+Instructions
+
+To run the project, in a terminal run on two machines in the same subnet:
+
+$ java -jar msync.jar <dir>
+
+Design Rationale
+
+The source was designed from the start to be as simple as possible.  There are two major threads: a sending thread and a receiving thread.  The sending thread, FileSender, is a private thread which runs forever, but only sends when told.  This is accomplished by the wait()/notify() methods.  The receiving thread is implemented in the main thread in the listenToSocket() method.  This method runs forever, reading input from the socket.
+
+Being multicast, all communication between peers was one-way.  A peer could join the group, broadcast its file list, send a file, and leave the group.
+
+A peer joins the group by sending "HOST <hostname>" to the group.
+A peer broadcasts each file it has by sending "FILE <id> <name> <size> <md5>" to the group.
+A peer sends a file "DATA <id> <kb> <base64kb>" to the group.
+
+When a peer receives a DATA message for a file it does not have (by comparing ids and md5s to a list) it decodes the base64 byte and writes it to the file.  The data is encoded in base64 so that the client can parse the message properly.  If it were raw bytes, the data might contain spaces which would mess up parsing.
+
+A peer leaves the group by sending "BYE" to the group.  This is done by a simple shutdown hook that is called when java is exiting.
+
+One final thread exists to implement the extra credit.  Every five minutes, it regenerates its file list and sends the new files to all the peers.
+
+The second extra credit option has also been implemented.  Since all file checks are done by MD5 instead of file name, if an MD5 conflict exsits, the peer's name is appended to the name of the offending file.

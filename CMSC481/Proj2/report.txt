@@ -4,15 +4,18 @@ Project 2
 James Lee
 jlee23@umbc.edu
 
+
 Introduction
 
 I have named this project msync.  It is written in Java.  The source resides in the org.thestaticvoid.msync package.  The purpose was to syncrhonize file between all hosts that join the multicast group.
+
 
 Instructions
 
 To run the project, in a terminal run on two machines in the same subnet:
 
 $ java -jar msync.jar <dir>
+
 
 Design Rationale
 
@@ -31,3 +34,11 @@ A peer leaves the group by sending "BYE" to the group.  This is done by a simple
 One final thread exists to implement the extra credit.  Every five minutes, it regenerates its file list and sends the new files to all the peers.
 
 The second extra credit option has also been implemented.  Since all file checks are done by MD5 instead of file name, if an MD5 conflict exsits, the peer's name is appended to the name of the offending file.
+
+
+Summary
+
+-Everything is working
+-Both extra credit parts are working
+-I worked with no one.
+-I only used the Java API documentation for reference.

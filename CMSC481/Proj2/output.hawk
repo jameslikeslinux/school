@@ -1,0 +1,18 @@
+jlee@hawk ~ $ mkdir Test
+jlee@hawk ~ $ cd Test/
+jlee@hawk ~/Test $ echo 1 > test
+jlee@hawk ~/Test $ cd ~/School/CMSC481/Proj2/
+jlee@hawk ~/School/CMSC481/Proj2 $ java -cp build org.thestaticvoid.msync.Msync /home/jlee/Test
+Generating file list...
+Reading: test
+Joining multicast group
+Discovered new member: falcon
+falcon has test
+Sending test
+Receiving kb 0 of 0 of test
+Receiving test...
+Leaving multicast group
+jlee@hawk ~/School/CMSC481/Proj2 $ ls ~/Test/
+test  test.falcon
+jlee@hawk ~/School/CMSC481/Proj2 $ cat ~/Test/test.falcon 
+0

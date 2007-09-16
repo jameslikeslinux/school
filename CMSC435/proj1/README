@@ -1,0 +1,19 @@
+Project 1
+James Lee <jlee23@umbc.edu>
+
+This scene includes a table, a lamp, and a pencil resting on paper.  I chose
+colors which best match the modeled objects' real life counterparts.  I tried
+to use the built-in surface shaders where appropriate.  I found that the
+plastic surface shader reflected the light the way I wanted on the lamp.
+Otherwise, wood is shaded by the "matte" shader, and the metal around the
+eraser of the pencil is shaded by the "metal" shader.
+
+I chose to make a lamp so that I would have a realistic use for the "spotlight"
+shader.  The light is placed in the paraboloid of the lamp, and made to point
+towards the table.  I found this did not illuminate the inside of the lamp the
+way I expected, so I used a less bright "pointlight" inside as well.
+
+I only used the official RenderMan Specification and the RenderMan for Poets
+guide for help on this project.
+
+This project can be built by simply typing "make" at the command line.

@@ -9,11 +9,11 @@ int main() {
 	RtPoint rbLegFrom = {29.0, 0.0, 14.0}, rbLegTo = {28, 29.0, 13.0};
 	RtPoint tableTopFrom = {-30.0, 29.0, -15.0}, tableTopTo = {30.0, 30.0, 15.0};
 	RtColor brown = {0.5, 0.4, 0.3};
-	RtColor black = {0.0, 0.0, 0.0};
+	RtColor black = {0.1, 0.1, 0.1};
 
 	RtPoint spotlightFrom = {-10.0, 45.0, 12.0};
 	RtPoint spotlightTo = {-9.0, 44.0, 11.5};
-	RtFloat pointlightIntensity = 50, spotlightIntensity = 500;
+	RtFloat pointlightIntensity = 50, spotlightIntensity = 500, ambientlightIntensity = 0.3;
 
 	RiBegin("proj1.rib");
 		RiDisplay("proj1.tif", "file", "rgba", RI_NULL);
@@ -26,6 +26,7 @@ int main() {
 
 		RiLightSource("pointlight", "intensity", &pointlightIntensity, "from", spotlightFrom, RI_NULL);
 		RiLightSource("spotlight", "intensity", &spotlightIntensity, "from", spotlightFrom, "to", spotlightTo, RI_NULL);
+		RiLightSource("ambientlight", "intensity", &ambientlightIntensity, RI_NULL);
 
 		RiWorldBegin();
 			RiPolygon(4, RI_P, floor, RI_NULL);

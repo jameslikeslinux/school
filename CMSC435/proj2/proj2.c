@@ -3,6 +3,7 @@
  */
 
 #include "draw.h"
+#include "Draw.h"
 #include "view.h"
 #include "motion.h"
 
@@ -29,7 +30,7 @@ void initGLUT(int *argcp, char *argv[])
 
   /* set callback functions to be called by GLUT for drawing, window
      resize, keypress, mouse button press, and mouse movement */
-  glutDisplayFunc(draw);
+  glutDisplayFunc(drawMountain);
   glutReshapeFunc(reshape);
   glutKeyboardFunc(key);
   glutMouseFunc(mousePress);

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+#include <GL/gl.h>
 #include "Triangle.h"
 
 Point* averagePoint(const Point *point1, const Point *point2) {
@@ -42,8 +44,36 @@ vector<Triangle*> Triangle::subdivide() const {
 	return triangles;
 }
 
-void Triangle::draw() const {
-	cout << "\t" << points[0]->getPoint()[0] << " " << points[0]->getPoint()[1] << " " << points[0]->getPoint()[2] << endl;
-	cout << "\t" << points[1]->getPoint()[0] << " " << points[1]->getPoint()[1] << " " << points[1]->getPoint()[2] << endl;
-	cout << "\t" << points[2]->getPoint()[0] << " " << points[2]->getPoint()[1] << " " << points[2]->getPoint()[2] << endl;
+void Triangle::draw() {
+	normalize();
+
+	glNormal3fv(normal);
+	glVertex3fv(points[0]->getPoint());
+	glVertex3fv(points[1]->getPoint());
+	glVertex3fv(points[2]->getPoint());
+}
+
+void Triangle::normalize() {
+	float a[3], b[3];
+
+	a[0] = points[0]->getPoint()[0] - points[1]->getPoint()[0];
+	a[1] = points[0]->getPoint()[1] - points[1]->getPoint()[1];
+	a[2] = points[0]->getPoint()[2] - points[1]->getPoint()[2];
+	
+	b[0] = points[1]->getPoint()[0] - points[2]->getPoint()[0];
+	b[1] = points[1]->getPoint()[1] - points[2]->getPoint()[1];
+	b[2] = points[1]->getPoint()[2] - points[2]->getPoint()[2];
+
+	normal[0] = a[1] * b[2] - a[2] * b[1];
+	normal[1] = a[2] * b[0] - a[0] * b[2];
+	normal[2] = a[0] * b[1] - a[1] * b[0];
+
+	float len = (float) sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+
+	if (len == 0.0)
+		len = 1.0;
+	
+	normal[0] /= len;
+	normal[1] /= len;
+	normal[2] /= len;
 }

@@ -108,9 +108,13 @@ key(unsigned char k, int x, int y)
     switch (k) {
     case 27:			/* Escape: exit */
 	exit(0);
-    case 'c': case 'C':	     /* 'c' or 'C': toggle smooth & faceted colors */
-	smoothColor = !smoothColor;
+    case 'u':
+        subdivideUp();
 	glutPostRedisplay();	/* tell GLUT to redraw after this change */
+	break;
+    case 'd':
+        subdivideDown();
+	glutPostRedisplay();
 	break;
     }
 }

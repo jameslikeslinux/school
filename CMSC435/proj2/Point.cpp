@@ -4,14 +4,22 @@ Point::Point(float x, float y, float z) {
 	point[0] = x;
 	point[1] = y;
 	point[2] = z;
+	modified = false;
 }
 
 const float* Point::getPoint() const {
 	return point;
 }
 
-const float* Point::getColor() const {
-	return color;
+void Point::setPoint(float x, float y, float z) {
+	point[0] = x;
+	point[1] = y;
+	point[2] = z;
+	modified = true;
+}
+
+bool Point::isModified() const {
+	return modified;
 }
 
 bool Point::operator==(const Point& point) const {

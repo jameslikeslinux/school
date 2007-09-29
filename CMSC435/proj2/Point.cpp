@@ -13,3 +13,9 @@ const float* Point::getPoint() const {
 const float* Point::getColor() const {
 	return color;
 }
+
+bool Point::operator==(const Point& point) const {
+	return this->point[0] == point.point[0] &&
+	       this->point[1] == point.point[1] &&
+	       this->point[2] == point.point[2];
+}

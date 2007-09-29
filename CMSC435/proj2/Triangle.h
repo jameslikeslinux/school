@@ -8,12 +8,13 @@ using namespace std;
 
 class Triangle {
 	public:
-		Triangle(const Point* point1, const Point* point2, const Point* point3);
-		vector<Triangle> subdivide() const;
+		Triangle(Point *point1, Point *point2, Point *point3, vector<Point*> *allPoints);
+		vector<Triangle*> subdivide() const;
 		void draw() const;
 	
 	private:
-		const Point* points[3];		
+		Point *points[3];		
+		vector<Point*> *allPoints;
 };
 
 #endif

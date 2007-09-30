@@ -4,13 +4,16 @@
 class Point {
 	public:
 		Point(float x, float y, float z);
+		void draw() const;
 		const float* getPoint() const;
 		void setPoint(float x, float y, float z);
 		bool isModified() const;
 		bool operator==(const Point& point) const;
 	
 	private:
-		float point[3];
+		void colorize();
+
+		float point[3], color[3];
 		bool modified;
 };
 

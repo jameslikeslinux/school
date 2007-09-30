@@ -23,7 +23,6 @@ static int smoothColor = 0;
 void 
 draw(void)
 {
-	drawMountain();
     /* clear old screen contents */
     glClearColor(0,0,0,1); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -108,12 +107,20 @@ key(unsigned char k, int x, int y)
     switch (k) {
     case 27:			/* Escape: exit */
 	exit(0);
-    case 'u':
+    case '+':
         subdivideUp();
 	glutPostRedisplay();	/* tell GLUT to redraw after this change */
 	break;
-    case 'd':
+    case '-':
         subdivideDown();
+	glutPostRedisplay();
+	break;
+    case 'i':
+    	increaseDisplacement();
+	glutPostRedisplay();
+	break;
+    case 'd':
+    	decreaseDisplacement();
 	glutPostRedisplay();
 	break;
     }

@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* initialize GLUT - windows and interaction */
 void initGLUT(int *argcp, char *argv[])
@@ -40,7 +41,8 @@ void initGLUT(int *argcp, char *argv[])
 /* initialize OpenGL - rendering state */
 void initGL()
 {
-  float lightdir[4] = {1,1,2,0};	/* homogeneous light position: directional if w=0 */
+  float lightdir1[4] = {1,1,2,0};	/* homogeneous light position: directional if w=0 */
+  float lightdir2[4] = {-1,-1,-2,0};
   float white[4] = {1,1,1,1}; 		/* color for light: glLightfv needs 4 components!*/
   float dim[4] = {.2,.2,.2,1};
  
@@ -52,13 +54,28 @@ void initGL()
   /* set up one light for both directional and ambient */
   glLightfv(GL_LIGHT0, GL_AMBIENT, dim);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightdir);
+  glLightfv(GL_LIGHT0, GL_POSITION, lightdir1);
   glEnable(GL_LIGHT0);			/* turn on this light */
+
+  glLightfv(GL_LIGHT1, GL_AMBIENT, dim);
+  glLightfv(GL_LIGHT1, GL_DIFFUSE, white);
+  glLightfv(GL_LIGHT1, GL_POSITION, lightdir2);
+  glEnable(GL_LIGHT1);			/* turn on this light */
+
   glEnable(GL_LIGHTING);		/* turn on use of lighting in general */
 }
 
 int main(int argc, char *argv[])
 {
+  int seed;
+
+  if (argc == 2)
+    seed = atoi(argv[1]);
+  else
+    seed = time(NULL);
+
+  setSeed(seed);
+
   /* set up GLUT and OpenGL */
   initGLUT(&argc, argv);
   initGL();

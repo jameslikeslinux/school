@@ -48,9 +48,9 @@ void Triangle::draw() {
 	normalize();
 
 	glNormal3fv(normal);
-	glVertex3fv(points[0]->getPoint());
-	glVertex3fv(points[1]->getPoint());
-	glVertex3fv(points[2]->getPoint());
+	points[0]->draw();
+	points[1]->draw();
+	points[2]->draw();
 }
 
 void Triangle::normalize() {

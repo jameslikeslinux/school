@@ -1,0 +1,175 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+
+\usepackage{listings}
+\lstset{language=Lisp,
+	basicstyle=\scriptsize}
+
+\title{Homework 1}
+\author{James Lee}
+
+\begin{document}
+\maketitle
+
+\noindent Sources:
+\begin{itemize}
+\item \emph{Common Lisp the Language, 2nd Edition}\\
+\verb+<http://www.cs.cmu.edu/Groups/AI/html/cltl/clm/index.html>+
+
+\item \emph{Lisp Quickstart}\\
+\verb+<http://cs.gmu.edu/~sean/lisp/LispTutorial.html>+
+\end{itemize}
+
+\section{What is AI}
+McCarthy does see the primary goal of AI as modeling human intelligence, with the exception that he thinks the computer hardware is capable of solving real world problems in ways that humans might not.  He thinks that our current hardware is capable of human intelligence if we just knew how to program it, and \emph{that}, he says, probably requires fundamental rethinking.  Computers can be made to simulate any machine, he claims, so if any machine could simulate human intelligence, it would be the computer.  However, current problems exist in the identification of subdomains to which better algorithms can be linked.  For this reason there does not exist a good AI for the game of Go, which humans generally play by dividing the board.
+
+\section{Why Lisp?}
+Graham claims that Lisp sits at such a high level on the programming language continuum that it is much easier and faster to create programs in than other languages.  He notes its unique features such as macros which most other languages don't support meaning his programs could do things that his competitors' could not.  Lisp is also fairly obscure, which he says multiplies its power in a competitive situation.
+
+\section{Lisp Programming}
+\begin{enumerate}
+\item Writing simple functions
+\begin{enumerate}
+\item
+\begin{lstlisting}
+(defun nextint (n)
+  ;; for integers
+  (if (integerp n)
+    ;; return the value of it plus 1
+    (+ n 1)))
+\end{lstlisting}
+
+\item
+\begin{lstlisting}
+(defun fact (n)
+  ;; for natural numbers 
+  (if (and (integerp n)	(>= n 0))
+    ;; multiply itself with the factorial of itself minus 1
+    ;; until 0, which just equals 1
+    (cond ((= n 0) 1)
+	  (t (* n (fact (- n 1)))))))
+\end{lstlisting}
+\end{enumerate}
+
+\item Operating on lists
+\begin{enumerate}
+\item
+\begin{lstlisting}
+(defun my-third (l)
+  ;; for a list with three or more elements
+  (if (and (listp l) (>= (list-length l) 3))
+    ;; pop the list twice and return the car
+    (dotimes (i 2 (car l)) (pop l))))
+\end{lstlisting}
+
+\item
+\begin{lstlisting}
+(defun scale-by-two (l)
+  ;; for lists
+  (if (listp l)
+    ;; return a list where each integer element has been doubled
+    (mapcar #'(lambda (x) (if (integerp x) (* x 2))) l)))
+\end{lstlisting}
+
+\item
+\begin{enumerate}
+\item
+\begin{lstlisting}
+(defun posint-mapcar (l)
+  ;; for lists
+  (if (listp l)
+    ;; initialize an empty list of positive integers
+    (let ((posints nil))
+      ;; for each element in the list
+      (mapcar #'(lambda (x)
+		  	;; if the element is another list
+		  (cond ((listp x)
+			 ;; call posint-mapcar on the list
+			 ;; and append it to the list of positive integers
+			 (setf posints (append posints (posint-mapcar x))))
+			;; if the element is a positive integer
+			((and (integerp x) (> x 0))
+			 ;; just append it to the list of positive integers
+			 (setf posints (append posints (cons x '())))))) l)
+      ;; and return the list of positive integers
+      posints)))
+\end{lstlisting}
+
+\item
+\begin{lstlisting}
+(defun posint-loop (l)
+  ;; for lists
+  (if (listp l)
+    ;; initialize an empty list of positive integers
+    (let ((posints nil))
+      ;; loop through each element in the list
+      (loop for i in l do
+		  ;; if the element is another list
+	    (cond ((listp i)
+		   ;; call posint-mapcar on the list
+		   ;; and append it to the list of positive integers
+		   (setf posints (append posints (posint-loop i))))
+		  ;; if the element is a positive integer
+		  ((and (integerp i) (> i 0))
+		   ;; just append it to the list of positive integers
+		   (setf posints (append posints (cons i '()))))))
+      ;; and return the list of positive integers
+      posints)))
+\end{lstlisting}
+
+\item
+\begin{lstlisting}
+(defun posint-recursive (l)
+  ;; while l is not nil
+  (if l
+    (let ((a (car l)))
+      (cond
+	;; if the car of the list is a list
+	((listp a)
+	 ;; return a list of positive integers in this list and the rest of the
+	 ;; elements
+	 (append (posint-recursive a) (posint-recursive (cdr l))))
+	;; if the element is a positive integer
+	((and (integerp a) (> a 0))
+	 ;; return a list of it and add the rest of the positive integers
+	 (append (cons a '()) (posint-recursive (cdr l))))
+	;; if its neither a list nor a positive integer, we still want to 
+	;; process the rest of the list
+	(t
+	  (posint-recursive (cdr l)))))))
+	\end{lstlisting}
+\end{enumerate}
+\end{enumerate}
+
+\item Conditionals and strings
+\begin{lstlisting}
+(defun case? (s)
+  ;; for strings
+  (if (stringp s)
+    	  ;; if the string is equal to its uppercase version, then it is
+	  ;; uppercase
+    (cond ((string= s (string-upcase s)) 'upper)
+	  ;; if the string is equal to its lowercase version, then it is
+	  ;; lowercase
+	  ((string= s (string-downcase s)) 'lower)
+	  ;; otherwise it is mixed
+	  (t 'mixed))))
+\end{lstlisting}
+
+\item Flattening a nested list
+\begin{lstlisting}
+(defun flatten-tree (l)
+  ;; while l is not nil
+  (if l
+    ;; if the first element is an atom
+    (if (atom (car l))
+      ;; return a list of it and the rest of the tree flattened
+      (cons (car l) (flatten-tree (cdr l)))
+      ;; otherwise, flatten the first element, then the rest of the tree and
+      ;; return it.  append will put the values of two lists into a new list
+      ;; where cons will just put the two lists into a new list.
+      (append (flatten-tree (car l)) (flatten-tree (cdr l))))))
+\end{lstlisting}
+\end{enumerate}
+\end{document}

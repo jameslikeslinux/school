@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
   else
     seed = time(NULL);
 
-  setSeed(seed);
+  srand(seed);
 
   /* set up GLUT and OpenGL */
   initGLUT(&argc, argv);

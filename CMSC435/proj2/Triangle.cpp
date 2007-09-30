@@ -1,9 +1,21 @@
+/*
+ * Triangle.cpp
+ * James Lee <jlee23@umbc.edu>
+ *
+ * Implementation for Triangle class.
+ * A lot of this is stupidly verbose and probably overcomplicated.
+ * Sorry.
+ */
+
 #include <iostream>
 #include <cmath>
 #include <GL/gl.h>
 #include "Triangle.h"
 
-Point* averagePoint(const Point *point1, const Point *point2) {
+// Helper function to return a point between two points.
+// There is no error checking.
+// The pointer returned is to dynamically allocated memory.
+static Point* averagePoint(const Point *point1, const Point *point2) {
 	float x = (point1->getPoint()[0] + point2->getPoint()[0]) / 2;
 	float y = (point1->getPoint()[1] + point2->getPoint()[1]) / 2;
 	float z = (point1->getPoint()[2] + point2->getPoint()[2]) / 2;
@@ -11,10 +23,12 @@ Point* averagePoint(const Point *point1, const Point *point2) {
 	return new Point(x, y, z);
 }
 
-Point* getPoint(vector<Point*> *allPoints, Point *point) {
+// Pretty much makes a set out of a vector, making sure only one copy of a
+// point exists in a vector.
+static Point* getPoint(vector<Point*> *allPoints, Point *point) {
 	for (unsigned int i = 0; i < allPoints->size(); i++) {
 		if (*allPoints->at(i) == *point) {
-			delete point;
+			delete point;	// meh.
 			return allPoints->at(i);
 		}
 	}
@@ -45,6 +59,8 @@ vector<Triangle*> Triangle::subdivide() const {
 }
 
 void Triangle::draw() {
+	// The points are messed with outside of this object so we have to
+	// renormalize since we don't know when the points change.
 	normalize();
 
 	glNormal3fv(normal);
@@ -53,6 +69,8 @@ void Triangle::draw() {
 	points[2]->draw();
 }
 
+// This is a pretty standard normalization function taken from some of my old
+// code.
 void Triangle::normalize() {
 	float a[3], b[3];
 

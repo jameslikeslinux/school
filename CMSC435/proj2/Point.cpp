@@ -1,3 +1,11 @@
+/*
+ * Point.cpp
+ * James Lee <jlee23@umbc.edu>
+ *
+ * Implementation for the Point class.
+ * If I had time, I would be more consistent in my usage of either three
+ * floats or arrays to represent position and color.  Oh well.
+ */
 #include <GL/gl.h>
 #include "Point.h"
 

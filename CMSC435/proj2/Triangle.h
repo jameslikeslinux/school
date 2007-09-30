@@ -1,3 +1,10 @@
+/*
+ * Triangle.h
+ * James Lee <jlee23@umbc.edu>
+ *
+ * Class definition of a triangle, which is made up of three points.
+ */
+
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
@@ -8,8 +15,15 @@ using namespace std;
 
 class Triangle {
 	public:
+		// These points had better be in the vector of all points!
 		Triangle(Point *point1, Point *point2, Point *point3, vector<Point*> *allPoints);
+
+		// Any triangles and points returned by this function are
+		// dynamically allocated.
 		vector<Triangle*> subdivide() const;
+
+		// This expects to be called only from the glut draw callback.
+		// Don't call it from elsewhere!
 		void draw();
 	
 	private:

@@ -1,0 +1,15 @@
+Project 2
+James Lee <jlee23@umbc.edu>
+
+This scene models a procedurally generated fractal mountain.  The mountain is
+represented in code by a vector of triangles, which are collections of three
+points and their normal vector.  The points are vertex positions and colors.
+The provided sample code is used largely untouched.  I modified the key
+callback function and added a second light, which I thought made the mountain
+look smoother and more realistic.
+
+The project can be built by typing "make" in its base directory.
+
+Seed values of 5, 8, and 11 with several increases to subdivision and random
+displacement seem to look pretty good on my machine, but I seem to remember
+that the glibc on GL has a slightly different rand function.

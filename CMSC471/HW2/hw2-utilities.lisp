@@ -247,11 +247,10 @@
 
 (defstruct city-node
   	(name)
-	(parent nil)
-	(children nil))
+	(parent nil))
 
 
-(defun BF-search (city_name)
+(defun BF-search (city_name &aux (nodes_expanded 0))
   (mapcar #'(lambda (x)
 	      (setf (city-visited x) nil))
 	  (all-cities))
@@ -262,6 +261,19 @@
 	(return-from BF-search nil))
       (let ((node (pop nodes)))
 	(if (eq (city-node-name node) 'bucharest)
-	  (return-from BF-search node) 	;; TODO: reconstruct path
-	  (setf (city-visited (get-city-struct (city-node-name node))) T)
-	(setf nodes (append nodes (city-neighbor-list 'pitesti))))))) ;; TODO: city-neighbor-list, remove visited, make nodes out of the rest, append to queue.
+	  (let ((path nil)
+		(cost 0))
+	    (loop
+	      (push (city-node-name node) path)
+	      (if (city-node-parent node)
+		(progn (setf cost (+ cost (neighbor-p (city-node-name node) (city-node-name (city-node-parent node)))))
+		       (setf node (city-node-parent node)))
+		(values nodes_expanded cost path))))
+	  (setf (city-visited (get-city-struct (city-node-name node))) T))
+	(let ((unvisited_neighbors nil))
+	  (mapcar #'(lambda (x)
+		      (if (city-visited (get-city-struct x))
+			(setf unvisited_neighbors (append unvisited_neighbors (list (make-city-node :name (city-name (get-city-struct x)) :parent node))))))
+		  (city-neighbor-list (city-node-name node)))
+	  (setf nodes (append nodes unvisited_neighbors))i
+	  (setf nodes_expanded (+ nodes_expanded (list-length unvisited_neighbors))))))))

@@ -3,8 +3,8 @@ CFLAGS=-Wall -g
 CXX=g++
 CXXFLAGS=-ansi -Wall -g
 LDFLAGS=-lGL -lGLU -lglut
-PROJ=proj2
-OBJ=draw.o motion.o proj2.o view.o Draw.o Point.o Triangle.o
+PROJ=proj3
+OBJ=draw.o motion.o proj3.o view.o Draw.o Point.o Triangle.o
 
 $(PROJ): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) $(LDFLAGS) -o $(PROJ)

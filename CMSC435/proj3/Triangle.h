@@ -25,12 +25,19 @@ class Triangle {
 		// This expects to be called only from the glut draw callback.
 		// Don't call it from elsewhere!
 		void draw();
-	
-	private:
+		void drawNormal();
+
+		// Adds normal for triangle to all of its points
 		void normalize();
+
+		bool livesWithinXZ(float x, float z, float *hitPos);
+
+		void getInterpolatedNormalAtLastKnownPoint(float *intNormal);
+	private:
 
 		Point *points[3];
 		float normal[3];
+		float u, v, w;
 		vector<Point*> *allPoints;
 };
 

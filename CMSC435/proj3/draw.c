@@ -4,6 +4,7 @@
    match the function definitions */
 #include "draw.h"
 #include "Draw.h"
+#include "Globals.h"
 
 // Apple's annoying non-standard GL include location
 #if defined(__APPLE__) || defined(MACOSX)
@@ -13,6 +14,7 @@
 #endif
 
 #include <stdlib.h>
+#include <math.h>
 
 // should we use per-vertex color or per-face?
 static int smoothColor = 0;
@@ -107,20 +109,35 @@ key(unsigned char k, int x, int y)
     switch (k) {
     case 27:			/* Escape: exit */
 	exit(0);
-    case '+':
-        subdivideUp();
-	glutPostRedisplay();	/* tell GLUT to redraw after this change */
-	break;
-    case '-':
-        subdivideDown();
+    }
+}
+
+void special(unsigned char k, int x, int y) {
+    switch (k) {
+    case GLUT_KEY_UP:
+    	carx += 1.0 * sin(heading * PI / 180);
+	carz -= 1.0 * cos(heading * PI / 180);
 	glutPostRedisplay();
 	break;
-    case 'i':
-    	increaseDisplacement();
+    case GLUT_KEY_DOWN:
+    	carx -= 1.0 * sin(heading * PI / 180);
+	carz += 1.0 * cos(heading * PI / 180);
 	glutPostRedisplay();
 	break;
-    case 'd':
-    	decreaseDisplacement();
+    case GLUT_KEY_LEFT:
+        heading--;
+	if (heading > 360.0)
+		heading -= 360.0;
+	if (heading < 0.0)
+		heading += 360.0;
+	glutPostRedisplay();
+	break;
+    case GLUT_KEY_RIGHT:
+    	heading++;
+	if (heading > 360.0)
+		heading -= 360.0;
+	if (heading < 0.0)
+		heading += 360.0;
 	glutPostRedisplay();
 	break;
     }

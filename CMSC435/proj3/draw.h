@@ -7,5 +7,6 @@ void draw(void);
 
 /* called on any keypress */
 void key(unsigned char k, int x, int y);
+void special(unsigned char k, int x, int y);
 
 

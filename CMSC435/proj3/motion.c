@@ -2,6 +2,7 @@
 
 #include "motion.h"
 #include "view.h"
+#include "Globals.h"
 
 // Apple's annoying non-standard GL include location
 #if defined(__APPLE__) || defined(MACOSX)
@@ -39,32 +40,25 @@ mouseDrag(int x, int y)
   float dx = x - oldX;		/* record differences from last position */
   float dy = y - oldY;
 
+  dx /= 2;
+  dy /= 10;
+
   oldX = x;			/* update stored position */
   oldY = y;
 
-  if (buttonPressed == GLUT_LEFT_BUTTON) {
-    /* rotation angle, scaled so 1/2 window width = about 90 degrees */
-    float angle = 180 * sqrt(dx*dx + dy*dy) / winWidth;
+  /* rotation angle, scaled so 1/2 window width = about 90 degrees */
+  float angle = 180 * dx / winWidth;
 
-    /* save current rotation state */
-    float matrix[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+  heading -= angle;
+  if (heading > 360.0)
+    heading -= 360.0;
+  if (heading < 0.0)
+    heading += 360.0;
 
+  
+  carx += dy * sin(heading * PI / 180);
+  carz -= dy * cos(heading * PI / 180);
 
-    /* 
-       From the starting state, rotate around axis perpendicular to
-       mouse motion, where the window x axis is aligned with the 3D
-       view x axis, while the window y axis is aligned with the 3D
-       view z axis. Find perpendicular using rule that (y,-x) is
-       perpendicular to (x,y)
-    */
-    glLoadIdentity();
-    glRotatef(angle, dy,dx,0);
-
-    /* reapply other rotations so far */
-    glMultMatrixf(matrix);
-
-    /* tell GLUT that something has changed and we must redraw */
-    glutPostRedisplay();
-  }
+  /* tell GLUT that something has changed and we must redraw */
+  glutPostRedisplay();
 }

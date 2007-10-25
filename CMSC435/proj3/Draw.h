@@ -7,10 +7,16 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-void drawMountain();
-void subdivideUp();
-void subdivideDown();
-void increaseDisplacement();
-void decreaseDisplacement();
+#ifdef __cplusplus
+extern "C" {
+#endif
+	void drawMountain();
+	void subdivideUp();
+	void subdivideDown();
+	void increaseDisplacement();
+	void decreaseDisplacement();
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,13 +18,18 @@ class Point {
 
 		const float* getPoint() const;
 		void setPoint(float x, float y, float z);
+
+		const float* getNormal() const;
+		void setNormal(float x, float y, float z);
+		void normalize();
+
 		bool isModified() const;
 		bool operator==(const Point& point) const;
 	
 	private:
 		void colorize();
 
-		float point[3], color[3];
+		float point[3], color[3], normal[3];
 		bool modified;
 };
 

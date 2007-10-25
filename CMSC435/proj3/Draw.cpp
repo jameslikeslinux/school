@@ -8,9 +8,12 @@
  */
 
 #include <cmath>
+#include <iostream>
 #include <GL/gl.h>
 #include <GL/glut.h>
+#include "Draw.h"
 #include "Triangle.h"
+#include "Globals.h"
 
 typedef vector<Triangle*> Mountain;
 
@@ -20,14 +23,14 @@ static int iteration = -1;
 static int dispRange = 200;
 
 // called by glut
-extern "C" void drawMountain() {
+void drawMountain() {
 	// if this is the first run
 	if (iteration == -1) {
 		// generate the two base triangles
-		Point *lf = new Point(-100.0, -50.0, 100);
-		Point *ln = new Point(-100.0, -50.0, -100.0);
-		Point *rf = new Point(100.0, -50.0, 100.0);
-		Point *rn = new Point(100.0, -50.0, -100.0);
+		Point *lf = new Point(-MOUNTAIN_CORNER, -MOUNTAIN_BASE,  MOUNTAIN_CORNER);
+		Point *ln = new Point(-MOUNTAIN_CORNER, -MOUNTAIN_BASE, -MOUNTAIN_CORNER);
+		Point *rf = new Point(MOUNTAIN_CORNER, -MOUNTAIN_BASE, MOUNTAIN_CORNER);
+		Point *rn = new Point(MOUNTAIN_CORNER, -MOUNTAIN_BASE, -MOUNTAIN_CORNER);
 
 		allPoints.push_back(lf);
 		allPoints.push_back(ln);
@@ -40,10 +43,48 @@ extern "C" void drawMountain() {
 
 		allMountains.push_back(mountain);
 		iteration = 0;
+
+		for (int i = 0; i < divisions; i++)
+			subdivideUp();
+		
+		for (int i = 0; i < 2; i++)
+			increaseDisplacement();
+
+		// normalize everything
+		for (unsigned int i = 0; i < allMountains[iteration].size(); i++)
+			allMountains[iteration][i]->normalize();
+
+		for (unsigned int i = 0; i < allPoints.size(); i++)
+			allPoints[i]->normalize();
 	}
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	cary = -MOUNTAIN_BASE;
+	float up[] = {0.0, 1.0, 0.0};
+
+	if (carx >= -MOUNTAIN_CORNER && carx <= MOUNTAIN_CORNER &&
+	    carz >= -MOUNTAIN_CORNER && carz <= MOUNTAIN_CORNER) {
+		float hitPos[3];
+		bool hit = false;
+		unsigned int i;
+
+		for (i = 0; i < allMountains[iteration].size() && !hit; i++)
+			hit = allMountains[iteration][i]->livesWithinXZ(carx, carz, hitPos);
+
+		if (hit && hitPos[1] > -MOUNTAIN_BASE) {
+			cary = hitPos[1];
+			allMountains[iteration][i - 1]->getInterpolatedNormalAtLastKnownPoint(up);
+		}
+	}
+
+	glLoadIdentity();
+	glRotatef(-asin(up[2] / 1.0) * 180 / PI, cos(heading * PI / 180), 0.0, -sin(heading * PI / 180));
+	glRotatef(asin(up[0] / 1.0) * 180 / PI, sin(heading * PI / 180), 0.0, cos(heading * PI / 180));
+	glRotatef(heading, 0.0, 1.0, 0.0);
+	glTranslatef(-carx + (5.0 * sin(heading * PI / 180)), -cary - 15.0, -carz - (5.0 * cos(heading * PI / 180)));
+
 
 	// draw the ocean
 	glBegin(GL_QUADS);
@@ -61,7 +102,21 @@ extern "C" void drawMountain() {
 	for (unsigned int i = 0; i < allMountains[iteration].size(); i++)
 		allMountains[iteration][i]->draw();
 	glEnd();
-
+/*
+	glBegin(GL_LINES);
+	for (unsigned int i = 0; i < allPoints.size(); i++) {
+		const float *point = allPoints[i]->getPoint();
+		const float *normal = allPoints[i]->getNormal();
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3fv(point);
+		glColor3f(0.0, 0.0, 1.0);
+		glVertex3f(point[0] + normal[0] * 5, point[1] + normal[1] * 5, point[2] + normal[2] * 5);
+	}
+	
+	for (unsigned int i = 0; i < allMountains[iteration].size(); i++)
+		allMountains[iteration][i]->drawNormal();
+	glEnd();
+*/
 	glutSwapBuffers();
 }
 
@@ -74,7 +129,7 @@ static void displace() {
 
 		// if the point is newly created (such as by a subdivision)
 		// and it's not an edge point
-		if (!point->isModified() && x != -100.0 && x != 100.0 && z != -100.0 && z != 100.0) {
+		if (!point->isModified() && x != -MOUNTAIN_CORNER && x != MOUNTAIN_CORNER && z != -MOUNTAIN_CORNER && z != MOUNTAIN_CORNER) {
 			// randomly generate a displacement with a 75% chance of being positive
 			int displacement = rand() % (int) (dispRange * 0.75) - (dispRange * 0.25);
 			// perform 1/f noise
@@ -85,7 +140,7 @@ static void displace() {
 }
 
 // called by glut input callback
-extern "C" void subdivideUp() {
+void subdivideUp() {
 	// if the "mountain" is already stored.
 	if (iteration < (int) allMountains.size() - 1) {
 		iteration++;
@@ -106,14 +161,14 @@ extern "C" void subdivideUp() {
 }
 
 // called by glut input callback
-extern "C" void subdivideDown() {
+void subdivideDown() {
 	// there will always be a lower mountain stored
 	if (iteration > 0)
 		iteration--;
 }
 
 // called by glut input callback
-extern "C" void increaseDisplacement() {
+void increaseDisplacement() {
 	// increase the range for future subdivisions
 	dispRange *= 1.1;
 
@@ -121,17 +176,17 @@ extern "C" void increaseDisplacement() {
 	for (unsigned int i = 0; i < allPoints.size(); i++) {
 		Point *point = allPoints[i];
 		float y = point->getPoint()[1];
-		point->setPoint(point->getPoint()[0], ((y + 50.0) * 1.1 - 50.0), point->getPoint()[2]);
+		point->setPoint(point->getPoint()[0], ((y + MOUNTAIN_BASE) * 1.1 - MOUNTAIN_BASE), point->getPoint()[2]);
 	}
 }
 
 // called by glut input callback
-extern "C" void decreaseDisplacement() {
+void decreaseDisplacement() {
 	dispRange *= (1.0 / 1.1);
 	
 	for (unsigned int i = 0; i < allPoints.size(); i++) {
 		Point *point = allPoints[i];
 		float y = point->getPoint()[1];
-		point->setPoint(point->getPoint()[0], ((y + 50.0) * (1.0 / 1.1) - 50.0), point->getPoint()[2]);
+		point->setPoint(point->getPoint()[0], ((y + MOUNTAIN_BASE) * (1.0 / 1.1) - MOUNTAIN_BASE), point->getPoint()[2]);
 	}
 }

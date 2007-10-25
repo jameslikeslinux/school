@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define DEFINE_GLOBALS
+#include "Globals.h"
+
 /* initialize GLUT - windows and interaction */
 void initGLUT(int *argcp, char *argv[])
 {
@@ -27,13 +30,14 @@ void initGLUT(int *argcp, char *argv[])
   glutInitWindowPosition(0, 0);
   glutInitWindowSize(winWidth, winHeight);
   glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
-  glutCreateWindow("Modeled Scene: 435 Assignment 2");
+  glutCreateWindow("Modeled Scene: 435 Assignment 3");
 
   /* set callback functions to be called by GLUT for drawing, window
      resize, keypress, mouse button press, and mouse movement */
   glutDisplayFunc(drawMountain);
   glutReshapeFunc(reshape);
   glutKeyboardFunc(key);
+  glutSpecialFunc(special);
   glutMouseFunc(mousePress);
   glutMotionFunc(mouseDrag);
 }
@@ -69,16 +73,24 @@ int main(int argc, char *argv[])
 {
   int seed;
 
-  if (argc == 2)
-    seed = atoi(argv[1]);
-  else
-    seed = time(NULL);
+  if (argc == 3) {
+    divisions = atoi(argv[1]);
+    seed = atoi(argv[2]);
+  } else {
+    printf("Usage: %s <divisions> <seed>\n", argv[0]);
+    return 1;
+  }
 
   srand(seed);
 
   /* set up GLUT and OpenGL */
   initGLUT(&argc, argv);
   initGL();
+
+  carx = 0.0;
+  cary = 0.0;
+  carz = 200.0;
+  heading = 0.0;
   
   /* let glut take over, it goes into a loop, checking for input and
      calling the input callbacks, then seeing if we need to draw and

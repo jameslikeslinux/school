@@ -1,15 +1,21 @@
-Project 2
+Project 3
 James Lee <jlee23@umbc.edu>
 
-This scene models a procedurally generated fractal mountain.  The mountain is
-represented in code by a vector of triangles, which are collections of three
-points and their normal vector.  The points are vertex positions and colors.
-The provided sample code is used largely untouched.  I modified the key
-callback function and added a second light, which I thought made the mountain
-look smoother and more realistic.
+This assignment is based on Project 2 in that a mountain is procedurally
+modeled.  In this project, the mountain is modeled statically, that is, it does
+not change during runtime.  It was changed to a perspective view, rotating
+around a point which is supposed to represent a car.  This car can move aronud
+using the mouse.  When it goes over the mountain, the point where the car is
+will elevate to the height of the triangle it is hovering over.  This triangle
+is determined using barycentric coordinates.  The same barycentric coordinates
+are used to interpolate the normals from the three points.  Finally, the
+viewpoint is rotated such that the interpolated normal is pointing up.
 
 The project can be built by typing "make" in its base directory.
 
-Seed values of 5, 8, and 11 with several increases to subdivision and random
-displacement seem to look pretty good on my machine, but I seem to remember
-that the glibc on GL has a slightly different rand function.
+Running the project with arguments:
+
+4 1
+4 2
+
+yield mountains which are fun to drive over.

@@ -99,6 +99,7 @@ void Triangle::normalize() {
 		normal[2] = -normal[2];
 	}
 
+	// Add non-normalized cross product to all of this triangle's points
 	for (int i = 0; i < 3; i++) {
 		Point *point = points[i];
 		const float *pointNormal = point->getNormal();
@@ -108,6 +109,7 @@ void Triangle::normalize() {
 				 pointNormal[2] + normal[2]);
 	}
 	
+	// Then normalize
 	float len = (float) sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
 
 	if (len == 0.0)
@@ -118,6 +120,8 @@ void Triangle::normalize() {
 	normal[2] /= len;
 }
 
+// Based on information about line-plane and line-triangle intersection at
+// http://www.cs.brown.edu/~scd/facts.html
 bool Triangle::livesWithinXZ(float x, float z, float *hitPos) {
 	float linePoint[] = {x, -MOUNTAIN_BASE, z};
 	float lineVector[] = {0.0, 1.0, 0.0};

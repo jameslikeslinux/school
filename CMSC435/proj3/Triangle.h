@@ -32,9 +32,11 @@ class Triangle {
 
 		bool livesWithinXZ(float x, float z, float *hitPos);
 
+		// Interpolates based on the barycentric coordinates
+		// stored by the last successful call of livesWithinXZ
 		void getInterpolatedNormalAtLastKnownPoint(float *intNormal);
-	private:
 
+	private:
 		Point *points[3];
 		float normal[3];
 		float u, v, w;

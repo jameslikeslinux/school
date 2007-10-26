@@ -55,7 +55,7 @@ mouseDrag(int x, int y)
   if (heading < 0.0)
     heading += 360.0;
 
-  
+  /* Move the car in the direction of the heading */
   carx += dy * sin(heading * PI / 180);
   carz -= dy * cos(heading * PI / 180);
 

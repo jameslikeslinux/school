@@ -36,6 +36,8 @@ reshape(int width, int height)
   /* adjust region of 3D space projected into this window */
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+
+  /* establish the frustum using gluPerspective */
   gluPerspective(60.0, 1.0, 5.0, 500.0);
 
   /* switch back to "normal" transformation mode */

@@ -46,7 +46,8 @@ void drawMountain() {
 
 		for (int i = 0; i < divisions; i++)
 			subdivideUp();
-		
+
+		// we don't really want a steep mountain
 		for (int i = 0; i < 2; i++)
 			increaseDisplacement();
 
@@ -64,15 +65,18 @@ void drawMountain() {
 	cary = -MOUNTAIN_BASE;
 	float up[] = {0.0, 1.0, 0.0};
 
+	// if the car should be in the mountain
 	if (carx >= -MOUNTAIN_CORNER && carx <= MOUNTAIN_CORNER &&
 	    carz >= -MOUNTAIN_CORNER && carz <= MOUNTAIN_CORNER) {
 		float hitPos[3];
 		bool hit = false;
 		unsigned int i;
 
+		// ask all triangles if the car is in it
 		for (i = 0; i < allMountains[iteration].size() && !hit; i++)
 			hit = allMountains[iteration][i]->livesWithinXZ(carx, carz, hitPos);
 
+		// if it found the triangle and it's above sea level
 		if (hit && hitPos[1] > -MOUNTAIN_BASE) {
 			cary = hitPos[1];
 			allMountains[iteration][i - 1]->getInterpolatedNormalAtLastKnownPoint(up);
@@ -80,9 +84,21 @@ void drawMountain() {
 	}
 
 	glLoadIdentity();
+
+	// Rotate around the X axis if facing forward;
+	// Rotate around the Z axis if facing right;
+	// Rotate until the Z value of the normal vector is facing up
 	glRotatef(-asin(up[2] / 1.0) * 180 / PI, cos(heading * PI / 180), 0.0, -sin(heading * PI / 180));
+
+	// Rotate around the Z axis if facing forward;
+	// Rotate around the X axis if facing right;
+	// Rotate until the X value of the normal vector is facing up
 	glRotatef(asin(up[0] / 1.0) * 180 / PI, sin(heading * PI / 180), 0.0, cos(heading * PI / 180));
+
+	// Rotate according to the heading
 	glRotatef(heading, 0.0, 1.0, 0.0);
+
+	// Then tranlate to 5 px behind and 15 px above the car's position
 	glTranslatef(-carx + (5.0 * sin(heading * PI / 180)), -cary - 15.0, -carz - (5.0 * cos(heading * PI / 180)));
 
 
@@ -103,6 +119,7 @@ void drawMountain() {
 		allMountains[iteration][i]->draw();
 	glEnd();
 /*
+	// Draws normals
 	glBegin(GL_LINES);
 	for (unsigned int i = 0; i < allPoints.size(); i++) {
 		const float *point = allPoints[i]->getPoint();

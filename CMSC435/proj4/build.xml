@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="raytracer" default="compile" basedir=".">
+	<target name="compile">
+		<javac srcdir="." destdir="." source="1.5" target="1.5" debug="on" />
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="." includes="**/*.class" />
+		</delete>
+	</target>
+</project>

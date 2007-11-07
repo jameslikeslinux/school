@@ -1,0 +1,17 @@
+Project 4
+James Lee <jlee23@umbc.edu>
+
+This project includes a parser to read NFF files which describe a scene.  The
+scene is rendered using ray-tracing techniques.  I have written it in Java, the
+language with which I am most familiar.  To build it:
+
+$ ant clean
+$ ant compile
+
+To run it:
+
+$ java org.thestaticvoid.raytracer.RayTracer < foo.nff > foo.ppm
+$ display foo.ppm
+
+I have implemented everything required by the project description.
+Additionally, I have added sphere tracing and concave polygon tracing.

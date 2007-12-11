@@ -63,7 +63,7 @@ int main() {
 			RiColor(black);
 			RiSurface("plastic", RI_NULL);
 			drawLamp(lampPos, LAMPHEIGHT);
-
+#if 0
 			RiTransformBegin();
 				/* The pencil rests at an angle on top of the paper which will be drawn
 				 * next */
@@ -78,6 +78,7 @@ int main() {
 				RiColor(white);
 				RiPolygon(4, RI_P, paper, RI_NULL);
 			RiTransformEnd();
+#endif
 		RiWorldEnd();
 	RiEnd();
 

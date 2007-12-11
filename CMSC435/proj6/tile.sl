@@ -1,25 +1,39 @@
-surface tile() {
+/*
+ * tile.sl
+ * James Lee <jlee23@umbc.edu>
+ * 
+ * This procedurally shades a surface to look as if it's been tiled by
+ * floor-tile-found-from-the-god-of-google.jpg
+ */
+
+surface tile(float width = 10) {
 	normal Nf = faceforward(normalize(N), I);
-	point P_world = ntransform("world", P);
+
+	/* Translate the given point to be relative to the shader rather than the view */
+	point P_world = transform("shader", P);
 
 	/* Draw background */
-	Ci = color(0.5, 0.25, 0.15);
-	Ci += (float noise (P_world * 0.25) - 0.5) * 0.2;
-	Ci += (float noise (P_world * 10) - 0.5) * 0.3;
-	Ci *= ambient() + diffuse(Nf);
+	Ci = color(0.5, 0.25, 0.15);				/* A dark reddish-brown */
+	Ci += (float noise (P_world * 0.25) - 0.5) * 0.2;	/* Add subtle darker and lighter regions */
+	Ci += (float noise (P_world * 10) - 0.5) * 0.3;		/* Make it appear coarse */
+	Ci *= ambient() + diffuse(Nf);				/* Light like the matte shader */
 
-	color white_tile = color(0.95, 0.9, 0.75);
-	white_tile += (float noise(P_world * 10) - 0.5) * 0.8;
-	white_tile += (float noise(P_world * 0.35) - 0.5) * 0.3;
-	white_tile = white_tile * (ambient() + 0.5 * diffuse(Nf)) + 1 * 0.5 * specular(Nf, -normalize(I), 0.1);
+	/* Define white tile color */
+	color white_tile = color(0.95, 0.9, 0.75);			/* A bright creamy-white */
+	white_tile += (float noise(P_world * 10) - 0.5) * 0.8;		/* Make it spotty */
+	white_tile += (float noise(P_world * 0.35) - 0.5) * 0.3;	/* Give it a dirty appearance */
+	white_tile = white_tile * (ambient() + 0.5 * diffuse(Nf)) + 1 * 0.5 * specular(Nf, -normalize(I), 0.1);	/* Light it like the plastic shader */
 
-	color blue_tile = color(0.0, 0.0, 0.1);
-	blue_tile += (float noise(P_world * 10) - 0.3) * 2;
-	blue_tile = blue_tile * (ambient() + 0.5 * diffuse(Nf)) + 1 * 0.5 * specular(Nf, -normalize(I), 0.1);
+	/* Define blue tile color */
+	color blue_tile = color(0.0, 0.0, 0.1);			/* A very dark blue */
+	blue_tile += (float noise(P_world * 10) - 0.3) * 2;	/* Add lots of very bright spots to it */
+	blue_tile = blue_tile * (ambient() + 0.5 * diffuse(Nf)) + 1 * 0.5 * specular(Nf, -normalize(I), 0.1);	/* Light it like the plastic shader */
 
-	float width = 10;
+	/* 
+	 * The relative point in the tile will be checked against these values 
+	 * to determine which color to shade a particular region
+	 */
 	float grout_width = width * 0.01;
-
 	float small_tile_begin = grout_width;
 	float big_tile_end = width / 2 - grout_width / 2;
 	float small_tile_end = (big_tile_end - small_tile_begin) / 2.75 - grout_width / 2;
@@ -35,8 +49,9 @@ surface tile() {
 
 	float blue_tile_width = center_blue_tile_end - center_blue_tile_begin;
 
-	float x = mod(xcomp(P_world) + 2, width);
-	float y = mod(zcomp(P_world) - 3, width);
+	/* Divide the surface into many tiles and get how far we are into this particular one */
+	float x = mod(xcomp(P_world), width);
+	float y = mod(zcomp(P_world) + width / 2, width);
 
 
 	/* 
@@ -47,6 +62,7 @@ surface tile() {
 	 * In other words, it's just easier to write the code for all like squares.
 	 */
 
+	/* Only write the code for one quarter of the tile and repeat it four times, tranlating x, y around */
 	float i;
 	for (i = 0; i < 4; i++) {
 		/* Draw (0, 0) square */
@@ -126,6 +142,7 @@ surface tile() {
 			y = width - y;
 	}
 
+	/* Set the opacity */
 	Oi = Os;
 	Ci *= Oi;
 }

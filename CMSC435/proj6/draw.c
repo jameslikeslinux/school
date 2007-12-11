@@ -26,6 +26,8 @@ void drawCube(RtPoint from, RtPoint to) {
 
 /* Calculates the corners of cubes to draw */
 void drawTable(RtFloat length, RtFloat width, RtFloat height) {
+	float sdr_width = 10;
+
 	if (length < 4 || width < 4 || height < 4)
 		return;
 
@@ -41,7 +43,7 @@ void drawTable(RtFloat length, RtFloat width, RtFloat height) {
 	drawCube(rfLegFrom, rfLegTo);
 	drawCube(rbLegFrom, rbLegTo);
 
-	RiSurface("tile", RI_NULL);
+	RiSurface("tile", "width", &sdr_width, RI_NULL);
 	drawCube(tableTopFrom, tableTopTo);
 }
 

@@ -1,8 +1,9 @@
 CC=gcc
 CFLAGS=-ansi -Wall -g
 LDFLAGS=-lri
-PROJ=proj1
-OBJ=proj1.o draw.o
+PROJ=proj6
+OBJ=proj6.o draw.o
+SDR=tile.sdr
 
 $(PROJ).tif: $(PROJ).rib
 	rndr $(PROJ).rib
@@ -11,7 +12,7 @@ $(PROJ).tif: $(PROJ).rib
 $(PROJ).rib: $(PROJ)
 	./$(PROJ)
 
-$(PROJ): $(OBJ)
+$(PROJ): $(OBJ) $(SDR)
 	$(CC) $(CFLAGS) $(OBJ) $(LDFLAGS) -o $(PROJ)
 
 -include $(OBJ:.o=.d)
@@ -22,5 +23,8 @@ $(PROJ): $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+%.sdr: %.sl
+	sdrc $< -o $@
+
 clean:
-	-rm -f $(PROJ).tif $(PROJ).rib $(PROJ) $(OBJ) $(OBJ:.o=.d)
+	-rm -f $(PROJ).tif $(PROJ).rib $(PROJ) $(OBJ) $(SDR) $(OBJ:.o=.d)

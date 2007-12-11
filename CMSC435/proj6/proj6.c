@@ -33,8 +33,8 @@ int main() {
 
 	RtPoint paper[4] = {{-4.25, 0.0, -5.5}, {-4.25, 0.0, 5.5}, {4.25, 0.0, 5.5}, {4.25, 0.0, -5.5}};
 
-	RiBegin("proj1.rib");
-		RiDisplay("proj1.tif", "file", "rgba", RI_NULL);
+	RiBegin("proj6.rib");
+		RiDisplay("proj6.tif", "file", "rgba", RI_NULL);
 
 		/* I like to see the details, so make a nice large image */
 		RiFormat(1920, 1080, 1);

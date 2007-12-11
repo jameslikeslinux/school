@@ -40,6 +40,8 @@ void drawTable(RtFloat length, RtFloat width, RtFloat height) {
 	drawCube(lbLegFrom, lbLegTo);
 	drawCube(rfLegFrom, rfLegTo);
 	drawCube(rbLegFrom, rbLegTo);
+
+	RiSurface("tile", RI_NULL);
 	drawCube(tableTopFrom, tableTopTo);
 }
 

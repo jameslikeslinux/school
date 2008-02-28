@@ -3,7 +3,7 @@
 \usepackage{fullpage}
 \usepackage{graphicx}
 
-\title{A Proposal for Simplifying Anonymous P2P Communication Using Tor}
+\title{Building an Anonymous Community on Tor}
 \author{James Lee\thanks{
 	Department of Computer Science and Electrical Engineering,
 	University of Maryland Baltimore County,
@@ -13,78 +13,58 @@
 \begin{document}
 \maketitle
 
-\paragraph{Keywords} Anonymous Communication, Tor, P2P
+\paragraph{Keywords} Anonymous Communication, Tor, P2P, Hub, Community
 
-\paragraph{Description} To simplify anonymous conversation and file-transfer through the design and implementation of a Direct Connect-like P2P service that uses Tor for all underlying communication.
+\paragraph{Description} To provide simple means to build communities of anonymous users which may talk and share files with each other through the design and implementation of a Direct Connect-like peer-to-peer (P2P) service that uses Tor for all underlying communication.
 
 \paragraph{Budget} \emph{To be determined...}
 
-\paragraph{Deliverables} Hub and client protocol documentation, source code of implementation, simple client installer, final project report, presentation, and slide show.
+\paragraph{Deliverables} \emph{To be determined...}
 
 \section{Executive Summary}
-To communicate anonymously with others means that an observer is unable identify the source and destination of an intercepted packet.  Tor is a software project which anonymizes arbitrary TCP communication by routing packets through multiple nodes in a manner originally described by David Chaum.  The purpose of this project is to make the use of Tor transparent in the design of a hub-style chatting and file-sharing application similar to Direct Connect.  The first goal will be to automate the Tor service configuration.  Next a simple protocol will be defined and services will be implemented for client-to-hub and client-to-client communication which must only use pseudonyms and not IP addresses.  Finally, a basic client graphical user interface will be designed.  The results will be that users can continue to have a familiar P2P experience while reducing their vulnerability to traffic-analysis.
+To communicate anonymously with others means that an observer is unable to identify the source, destination, and message of an intercepted packet.  Tor is a software project which anonymizes arbitrary TCP communication by routing packets through multiple nodes before reaching their destination.  It also provides a mechanism to hide services so that they are only accessible by a pseudonym on the Tor network.  However, users must know the pseudonym in order to establish a connection to the hidden service.  Additionally, hidden services are difficult for novice computer users to set up, requiring knowledge of private key management and TCP/IP addressing.  Because of this and the difficulty of discovering hidden services, there don't exist any anonymous communities on the Tor network.
+
+I intend to make the use of Tor to communicate and share files so easy that anonymous communities can begin to grow.  To do this, I will design and implement a hub-based P2P protocol similar to the popular Direct Connect service.  The protocol will require that users communicate over Tor and are identified only by pseudonyms, not IP address like typical P2P protocols.  The client implementation will bundle a Tor client and configure it automatically.  It will also have a basic graphical user interface (GUI) and a one-click installer.
 
 \section{Motivation}
-In a P2P system, two peers who communicate with each other must know the other's address to establish the connection.  Over the Internet, this address is a unique IP address assigned to a customer by his/her ISP.  Users who wish to exercise their fair-use rights to a copyrighted work by downloading it over a P2P network face the fear of litigation from the copyright holder, who can find their identity by contacting their ISP.  For example I downloaded a couple of minutes of a movie for review using a popular P2P network.  I did not know I was downloading it from the copyright holder.  They contacted my ISP who then sent threats to me.  I was able to clear everything up with my ISP and the copyright holder because I was able to prove the amount that I downloaded was well within my fair-use rights, but others are not so lucky.  That was when I began investigating anonymous communication.
+I am proposing this project because I want to be able to participate in a community anonymously.
 
-Today, Tor is the most active and largest anonymous communication network.  It routes encrypted packets through multiple nodes in a network as proposed by David Chaum in his 1981 seminal paper so that no single node can know both the source and destination of the route.  Tor is unique in that it supports anonymizing arbitrary TCP streams using its built-in SOCKS interface.  This means that some existing P2P systems can take advantage of the Tor network.  There are several problems with this, though.
+Why would anyone want to remain anonymous?  Users may want to remain anonymous because they have material that is illegal or for which the distribution is illegal.  The material might just be embarrassing if not illegal.  They may also fear retribution for communicating a sensitive or offensive message.  Anonymous networks provide a great way for users to voice opinions.  They also give a voice to people who are otherwise censored by a governing body.
 
-For peers to know where other peers are located, most protocols have some system for peers to announce who they are.  In BitTorrent, for example, peers identify themselves with a central ``tracker.''  Since these protocols weren't designed to use the Tor network, they identify themselves using their IP address.  So even if they use Tor, peers' identities can be discovered.
+Typical communication on the Internet is not anonymous.  All users can be identified by their unique IP address.  Anonymous networks such as ``mixes'' as originally proposed by David Chaum in 1981 route encrypted messages through multiple nodes in a network.  As a result, no single node can discover the source, destination, and contents of messages.
 
-Additionally, it adds another layer of complication to the scenario since two programs need to be used: the P2P program itself and the Tor client.  That means more confusion for typical users.
+Why would someone want to participate in a community?  Communities are collections of users with some shared interest.  All the users have a way to discover all the other users in the community, that way they can meet other people with a shared interest.  In communities where users are identifiable, usually by a nick name, it is possible to build a reputation with the other users, even develop friendships.  Simply put, communities are fun ways of interacting with other people.
 
-My solution is to develop a system where Tor can be automatically configured and run in the background when a user wishes to engage in P2P communication.  Each peer's Tor client would be configured to operate as a hidden server which would give them all pseudonyms that they can be identified by.  Then a new protocol will be developed which only knows about clients' pseudonyms.  This protocol will be designed after Direct Connect.
+How can a community be built?  Most importantly, there must be some way for users to know the other members of the community.  Users could be known could be by nick name or pseudonym.  The users must be easy to discover.  If users can't be discovered, there is no way for someone to find someone else with whom to share their common interest.  Most users will also need some reason to join a community.  Some will expect some sort of content.  A community must also be easy to join.  If it is too dificult, users will not feel it is worth their time.  I am proposing that the ability to communicate and share files anonymously will entice users to join an anonymous community.
 
-Direct Connect is a simple P2P system which revolves around a central hub.  This hub only keeps track of who is logged in, and in our case, it will just hold pseudonyms.  When a user logs in to the hub, they are able to broadcast messages to all the users of the hub, basically enabling chat, or further establish links with other users, with whom they can talk one-on-one or transfer files.
+Users will have those abilities through the design and implementation of a new P2P protocol similar to Direct Connect.  They will be kept anonymous by Tor.
 
-Users of P2P systems are often computer novices, so this system should not appear any different than existing P2P systems.
+Why base the design off Direct Connect?  Direct Connect is known for its simplicity.  Users connect to a hub which keeps track of who is online in the community, that way new users are easily discoverable.  Hubs also facilitate searching and chatting since they serve as a single broadcast point to all users.  Also important is that having distinct hubs allow multiple communities to grow, each with special areas of interest.  A system similar to Direct Connect will give users significant incentive to join.
 
-Finally, having a distinct network specifically for file-sharing will provide a tool to help analyze and improve the performance of Tor.
+Why use Tor to anonymize communication?  Tor is a well-studied, mature implementation of onion-routing.  Onion-routing routes messages like Chaum's mixes, but on persistent routes, reducing latency and increasing throughput which is ideal for transferring files.  Tor is the largest active anonymity network and is the subject of academic scrutiny, the benefits of which applications built on Tor receive automatically.  Tor is unique in that it can route arbitrary TCP streams.  It provides a standard SOCKS proxy interface so most networking libraries can use Tor unmodified.  Tor also provides a mechanism to hide services so that they are only accessible by a pseudonym on the Tor network.  Clients in my system will be hidden by this mechanism and users will be identified by the pseudonym that Tor provides.
 
 \section{Previous Work}
 \emph{To be completed...}
 
 \section{Specific Aims and Plan}
-First, Tor clients must be configured and run upon request.  A Java library will be created to create a configuration file and run the Tor binary.  The Tor binary can be stored within the library since Java libraries are simple zip files.  It can be self-extracted at runtime.  Further configuration and status monitoring of Tor can be accomplished through its controller protocol as defined at \verb+https://www.torproject.org/svn/torctl/doc/howto.txt+.
-
-Next, a hub protocol must be developed.  It must handle incoming connections and remember who is connected.  It must send notifications to all the users when a new user logs on.  It must accept incoming chat messages and distribute them to all the connected nodes.  It must pass on search requests to all the nodes, and pass back the search results to the requester.  Finally it must handle disconnection of nodes.
-
-A client protocol must be written to conform to what the hub expects.  Additionally, clients will need to be able to send text chat messages to each other, request file lists, and files themselves.
-
-The clients must keep track of files they own.  They must recognize when a file has changed, or when a file has been added or removed.
-
-All implementations will be written in Java since it is easily portable.  The client will be installable with a single click using Java Web Start.
 
 \section{Deliverables}
-The hub and client protocols will be formally documented.  The source code of the implementation of the hub and the client will be provided.  A Java Web Start installer will be created.  A final report, presentation, and slide show will be created.
+
 
 \section{Issues}
-The must difficult issue that I foresee is how to realistically test a P2P system.  It would be impractical to actually install the client on several computers.  Fortunately Linux provides means to create virtual network interfaces.  Using that capability, scripts can be written that bind multiple instances of the P2P client to different virtual network interfaces.
 
 \section{Bibliography}
 \emph{To be completed...}
 
 \section{About Me}
-I am a senior Computer Science student at the University of Maryland Baltimore County.  My primary interest is in open-source desktop software.  I love making complicated tasks easier as exemplified by my program iriverter (\verb+http://iriverter.thestaticvoid.org+), which is a Java frontend to mencoder to convert videos.
+\emph{To be completed...}
 
 \section{Schedule}
-\begin{center}
-\begin{tabular}{ll}
-\multicolumn{1}{c}{\bf Date} & \multicolumn{1}{c}{\bf Milestone}\\
-\hline
-March 9 & Tor configuration library complete\\
-March 16 & Protocols defined and documented\\
-March 23 & Hub completed\\
-March 30 & Client completed\\
-April 6 & User interface and installer completed
-\end{tabular}
-\end{center}
 
 \section{Budget}
 \emph{To be determined...}
 
 \appendix
 \section{Research Conference}
-Tor was introduced at the 13th USENIX Security Symposium.
 
 \end{document}

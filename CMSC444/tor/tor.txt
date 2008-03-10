@@ -1,0 +1,226 @@
+Overview of Onion Routing
+	* Clients choose path through network, building a circuit.
+	* Each node (onion router or OR) knows the predecessor and successor
+	  only.
+	  <onion routing pic from wikipedia>
+	* There was briefly proof-of-concept onion routing network built which
+	  suffered from many design flaws.
+
+Improvments in Tor
+	* Perfect forward security
+		- Initiator negotiates session keys with each node while
+		  building a circuit rather than encrypting data with nodes'
+		  public keys.
+		- This way a hostile node cannot replay old traffic with a
+		  newly discovered key.
+	* Separation of "protocol cleaning" from anonymity
+		- Onion routing originally requiried protocol specific proxies
+		  for each application (one for HTTP, one for SMTP, etc.) which
+		  would strip out identifying information.
+		- Tor provides means for most TCP programs to access the
+		  network through a SOCKS proxy interface.
+		- But it relies on other programs to sit between the SOCKS
+		  interface and the application to strip out application level
+		  identifying information.
+		- One such program is Privoxy.
+	* No mixing, padding, or traffic shaping
+		- Original specification called for mixing, padding, and
+		  traffic shaping communication between ORs.
+		- The designers of Tor considered the trade-offs between the
+		  cost in time, bandwidth, and security: mixing and traffic
+		  shaping increase latency.
+		- They also cited recent research showing padding still leaves
+		  messages vulnerable to analysis.
+		- As such, Tor leaves these security techniques out.
+	* Many TCP streams can share one circuit
+		- Original specification required a separate circuit for each
+		  application-level request.
+		- Tor multiplexes multiple TCP streams along one circuit
+		  improving efficiency.
+	* Leaky-pipe circuit topology
+		- Tor initiators can direct traffic out of nodes partway down
+		  the circuit making volume attacks more difficult.
+		- For example, if an observer can see both ends of the circuit,
+		  but you specify that half the data exits halfway along the
+		  circuit, the observer may see 100 KB/s going into the
+		  circuit, but only 50 KB/s going out.
+	* Congestion control
+		- Earlier anonymity designs do not address traffic bottlenecks.
+		- TODO
+	* Directory servers
+		- Earlier systems informed users of state information by
+		  flooding the network.
+		- Tor provides for some more trusted nodes to act as directory
+		  servers providing a list of ORs and their states which
+		  clients download periodically over HTTP.
+	* Variable exit policies
+		- Provides means for nodes to configure which hosts and ports
+		  they'll connect to.
+		- This is important because, being a volunteer network, some
+		  people may be uncomfortable allowing certain traffic.
+	* End-to-end integrity checking
+		- Original onion router did not check the integrity of the data
+		  block before it exited the network.
+		- There was no way to detect whether someone changed the data.
+	* Rendezvous points and hidden services
+		- Previous onion router implementations included long-lived
+		  reply onions sent along with the original onion with which a
+		  recipient could build a circuit back to the original sender.
+		- If any of the nodes included in the reply onion went down or
+		  changed their keys, the reply onion would become useless.
+		- Tor clients can negotiate rendezvous points to connect to
+		  hidden servers.
+		- I'll discuss the details of this later.
+
+Design Goals
+	Above all, Tor seeks to frustrate attackers from linking communication
+	partners.
+
+	Goals
+		* Deployability
+			- Volunteers must want to run it.
+			- As such, Tor must be designed so that volunteers are
+			  not liable for the traffic flowing through their
+			  relays.
+			- Must not be diffucult to implement (i.e. requiring
+			  kernel patches, etc.)
+		* Usability
+			- If the system is hard to use, there will be less 
+			  users.
+			- Since Tor hides users within users, a system with
+			  more users can improve anonymity.
+		* Flexibility
+			- Tor should be flexible enough to serve as a research
+			  test bed.
+			- Researchers should not have to reinvent the wheel for
+			  every improvement they make to the onion routing
+			  concept.
+		* Simple Design
+			- Additional features makes proving anonymity and
+			  security more complex.
+	
+	Non-goals
+		* Not peer-to-peer
+			- TODO
+		* Not secure against end-to-end attacks.
+			- Anyone who can see both ends of a circuit can time
+			  data or track the volume of data to link
+			  communication.
+		* Tor protocol normalization
+			- Tor will not strip out identifying information from
+			  the application-level protocol.
+		* Not steganographic
+			- Tor does not try to hide who is connected to the
+			  network.
+
+	Threat Model
+		* Tor does not protect against a global passive adversary.
+		* The design assumes adversary can observe some fraction of
+		  network traffic.
+		* He can generate, modify, delete, or delay traffic, and he can
+		  operate an OR of his own.
+		* XXX should this be included?
+
+Tor Design
+	Overview
+		* Each OR runs as a normal user-level process without any
+		  special privilegs.
+		* Each OR maintains a TLS connection to every other OR.
+		* Each user runs an onion proxy (OP).
+			- Fetches directories (lists of ORs and their statuses)
+			- Establishes circuites
+			- Accepts TCP streams from user-applications and
+			  multiplexes them across a circuit.
+		* The last OR in the circuit connects to the specified
+		  destination and relays the data.
+
+	Keys
+		* Each OR has two keys: long-term identity key and short-term
+		  onion key
+		* Identity key is used to sign TLS certificates and the router
+		  description (keys, address, bandwidth, exit policy, etc.)
+		* Directory servers use identity keys to sign directories
+		* Onion keys used to decrypt circuit setup requests from users.
+		* Additionally, TLS maintains its own set of short-term keys.
+	
+	Cells
+		* Fixed-size, 512-byte unit of communication between OP/OR or
+		  OR/OR.
+		* Header includes a circuit ID (since multiple circuits may be
+		  multiplexed on a TLS connection), and a command.
+		* Based on the command, cells are either "control" cells or
+		  "relay" cells.
+			- Control cells are interpreted by the node that
+			  receives them.
+			- Relay cells contain end-to-end stream data.
+			- Relay cells contain an additional relay header
+			  containing a stream ID (since multiple streams may be
+			  multiplexed on a circuit), checksum and length of the
+			  payload, and an additional relay command.
+		* <picture of cells from article>
+	
+	Circuits and Streams
+		* <Figure 1>
+
+		* Because it can take several tenths of a second to open up a
+		  circuit, OPs construct them preemptively and recreate them
+		  periodically when they're not in use.
+		* The activity above the dotted line shows a circuit creation.
+		* Alice sends a "create" cell containing an ID of her choosing
+		  (one which she isn't already using) to Bob (which is OR1 in
+		  this diagram) where the payload is the first half of the
+		  Diffie-Hellman handshake g^{x_1} encrypted with Bob's onion
+		  key.
+		* Bob responds to Alice with a "created" cell containing his
+		  half g^{y_1} and a hash of the negotiated key K_1=g^{x_1y_1}.
+		* Now that that link has been established, Alice and Bob can
+		  send one another relay cells encrypted with the key K_1.
+		
+		* Alice then extends the circuit to Carol (which is OR2 in this
+		  diagram) by sending a relay extend cell to Bob containing
+		  Carol's address and a handshake g^{x_2} encrypted for her.
+		* Bob takes the encrypted handshake, chooses a unique circuit
+		  ID and sends a "create" cell to Carol the same way Alice
+		  originally sent to Bob.
+		* Carol repsonds with a "created" cell with her half g^{y_2}
+		  and a hash of the negotiated key which Bob packages up in a
+		  "relay extended" cell.
+		* Now Alice and Carol have a key K_2=g^{x_2y_2}.
+	
+	Relay Cells
+		* Now Alice has negotiated session keys with each router on the
+		  circuit.
+		* Any outgoing relay cells will be encrypted in reverse order
+		  starting from the destination.
+		* For example, Alice wants to send a relay cell to Carol
+		  through Bob so the data gets encrypted with Carol's public
+		  key then Bob's.
+		* When Bob receives a relay cell, he decrypts the data and
+		  checks the hash against the digest.  If they match, then data
+		  was meant for him.  Otherwise he passes it along based on the
+		  circuit ID.
+		* When Carol receives a relay cell meant for her, she will
+		  decrypt the data, check the hash, and it will match the
+		  digest, so she will perform the command in the relay header.
+
+		* Any cells coming into Alice will have been encrypted with the
+		  session keys of each of the routers it passes through on the
+		  way back.
+		* In this example Alice will decrypt messages she receives with
+		  Bob's session key, then Carol's session key.
+
+	Opening and Closing Streams
+		* An application can request to open a TCP stream by asking the
+		  OP through SOCKS.
+		* The OP chooses or creates a circuit, picks an exit node on
+		  that circuit, and sends a "relay begin" cell to that exit
+		  node.
+		* The exit node makes the connection to the specified
+		  destination and repsonds with a "relay connected" cell.
+		* Then the OP and exit node may send "relay data" cells back
+		  and forth.
+		* As a note to application developers, DNS requests should be
+		  sent directly through Tor's SOCKS interface.  Some 
+		  applications resolve domain names before sending the request
+		  through SOCKS, and this will reveal the user to the DNS
+		  server.

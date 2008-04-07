@@ -1,0 +1,138 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+
+\title{Specification of a P2P Protocol Built on Tor}
+\author{James Lee\\
+	\small Computer Science and Electrical Engineering\\
+	\small University of Maryland Baltimore County\\
+	\small\tt jlee23@umbc.edu}
+\date{March 23, 2008} % XXX change me
+
+\begin{document}
+\maketitle
+
+\textit{This document is a draft and will likely change during implementation.  Expect it to be more detailed, especially with error handling, when completed.}
+
+\section{Overview}
+The following document describes the communication between systems in a peer-to-peer (P2P) system built on Tor.  This protocol will consist of simple plain text commands sent between clients and hubs.  The hub will stand as a central point for directory listing, chatting, search query propagation, and results collection.  A client will have the ability to connect to a single hub, chat, private message, search, display file lists, and transfer files.
+
+All connections must be made through Tor and every client and hub must have some hidden service identified by an onion address with which they can be contacted.  Clients and hubs must know this address.
+
+\section{Handshake}
+All connections, whether from client-to-hub or client-to-client, must begin with a handshake to prove to the receiver that the initiator is who he says he is.
+
+\begin{description}
+\item[A] \verb+YO <A's address> <rand1>+
+\item[B] \verb+SUP <rand1> <rand2>+
+\item[A] \verb+NOTMUCH <rand2>+
+\item[B] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+A opens a connection to B sending his known onion address and a random integer \verb+rand1+.  B opens a new connection to A's address sending the original \verb+rand1+ plus another random integer \verb+rand2+.  Finally A responds on the original connection associated with \verb+rand1+ sending \verb+rand2+ back to B.  Now B knows that A's address is valid and communication can continue on the first connection.  The second can be disconnected.
+
+If at any point these messages should not pass as expected, the connection should be closed.  If a handshake is not successful within a minute, the connection should be closed.
+
+\section{Client-to-hub Communication}
+Once a client connects to a hub, and a handshake is completed successfully, the hub will know the client's address and communication can continue using the following messages.
+
+\subsection{Nick Name}
+A client can optionally have a nickname for their complicated onion address.  It's only use is in the user interface.
+
+\begin{description}
+\item[Client] \verb+NICK <nick>+
+\item[Hub] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+The hub should note the correspondence between onion address and nick name and announce the nick name to all the clients.
+
+\subsection{Broadcast Message}
+Clients should be able to broadcast messages to all the other clients connected through the hub.  This can result in a sort of chat.
+
+\begin{description}
+\item[Client] \verb+BROADCAST <message>+
+\item[Hub] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+\subsection{Search}
+Clients should be able to initiate search requests through the hub.
+
+\begin{description}
+\item[Client] \verb+SEARCH <id> <regex>+
+\item[Hub] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+\verb+id+ is a unique integer specified by the client to identify a particular search query.  This will be important to know what query results belong to.  The \verb+regex+ regular expression must be Java compatible.
+
+\subsection{Search Results}
+\begin{description}
+\item[Client] \verb+SEARCHRESULT <id> <size> <filename>+
+\item[Hub] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+A client should be able to return search results for a query back to the hub.  For each hit, this message should be sent.  \verb+id+ is the same \verb+id+ from the original query.
+
+\subsection{Disconnection}
+\begin{description}
+\item[Client] \verb+DISCONNECT [<reason>]+
+\item[Hub] \verb+<COOL|NOTCOOL> [<message>]+
+\end{description}
+
+This message will be sent to the hub just before the user disconnects.
+
+\section{Hub-to-client Communication}
+
+\subsection{Client Connection}
+\begin{description}
+\item[Hub] \verb+CONNECT <address>+
+\end{description}
+
+This message gets sent to all logged in users when a new user logs on to the hub.
+
+\subsection{Client Nick Change}
+\begin{description}
+\item[Hub] \verb+NICK <address> <nick>+
+\end{description}
+
+This message gets sent to all logged in users when a user sends a \verb+NICK+ message to the hub.
+
+\subsection{Broadcast Message}
+\begin{description}
+\item[Hub] \verb+BROADCAST <address> <message>+
+\end{description}
+
+This message gets sent to all logged in users when a user sends a \verb+BROADCAST+ message to the hub.
+
+\subsection{Search Results}
+\begin{description}
+\item[Hub] \verb+SEARCHRESULT <id> <address> <size> <filename>+
+\end{description}
+
+This message gets sent to the user belonging to a query's \verb+id+ when it receives a \verb+SEARCHRESULT+ message from another user.
+
+\subsection{Disconnection}
+\begin{description}
+\item[Hub] \verb+DISCONNECT <address> [<reason>]+
+\end{description}
+
+This message get sent to all logged in users when a user sends a \verb+DISCONNECT+ message to the hub.
+
+\section{Client-to-client Communication}
+
+\subsection{File List}
+\begin{description}
+\item[A] \verb+FILELIST+
+\end{description}
+
+When a client receives this message, they should immediately send a file list in an XML format as yet to be documented, then close the connection.
+
+\subsection{Get File}
+\begin{description}
+\item[A] \verb+GET <offset> <filename>+
+\end{description}
+
+When a client receives this message, they should immediately send the data contained in \verb+filename+ starting at \verb+offset+ bytes.
+
+\section{Handling Errors}
+Should a system receive an invalid message, they may send a \verb+NOTCOOL+ message to inform the other system of the error.  They may also choose to disconnect if it seems more appropriate.  Any system should be able to handle disconnection at any time.
+\end{document}

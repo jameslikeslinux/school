@@ -1,0 +1,46 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+
+\title{Evaluation of a Proposal for an Election Tracker Prototype\thanks{Steven Silva, University of Maryland Baltimore County}}
+\author{James Lee}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\paragraph{Merit} Voting seems to be an area of study where a lot of improvements can be made.  This project aims to make analysis of voting data easier for the public.  Currently, voting data is ``a significant challenge to obtain.''  The investigator will design a secure and consistent system to store and present voting data down to the machine level.
+
+Attacking this problem will require strong insight into the security issues of keeping this valuable data safe from adversaries and keen foresight for designing a data specification that can handle changes in the future.  The system will also have to be extremely simple to use for both election officials and voters or there might not be enough incentive to implement it.
+
+Balancing these three major aspects (security, generalizability, and usability) will not be trivial.
+
+\paragraph{Impact on Society} If voting data were more available to the public and statistics could be collected on voting trends, then deviations from the trend could be more easily identified.  If such fraud could be detected and reported, some voters' trust in the whole process may be renewed.
+
+The system may also spark interest in more robust voting systems.  If I can see the votes at each machine, how can I verify that the report is correct?
+
+It has also been noted that the system could be generalized to collect and display arbitrary data such as medical and economic performance at hospitals and businesses.
+
+\paragraph{Qualifications}
+Assuming the investigator has taken software development, networking, database, and scripting classes, he should have little trouble completing the project.  His plans include building a secure website and designing and documenting a specification for data, all subjects of discussion in the classes mentioned before.
+
+\paragraph{Budget}
+The proposal does not divulge enough of the details of the investigator's plan for me to gauge whether or not his budget is reasonable; however, on the surface, it does appear to be an overestimate.  He proposes 220 total hours for the project, which works out to five full work weeks.  XML will probably make this task much simpler than it would otherwise have been and modern databases and scripting languages make prototyping very fast.
+
+\paragraph{Proposal}
+The project is meant to focus on Information Assurance which, according to Wikipedia, is the ``practice of managing information-related risks.''  Indeed, this system will make the information of voting more available without compromising its integrity or revealing any confidential details.
+
+\paragraph{Technical Comments}
+It is unclear from the proposal what work in the area has been completed in the past.  How will you be building on previous work?
+
+It also does not detail the plan very well.  What exactly are you doing?  Are you just creating an XML specification of the voting data and a web interface present it?  What information will need to be contained in the XML?  Where is the XML coming from?  Who compiles it?  Where is it going?  Where is it going to be stored?  Why use XML?
+
+If each of the precincts is meant to send the data, how can the system trust it?  How can voters trust the data once it's collected?
+
+How will the data be presented?  How will the web application be implemented?
+
+How will you judge whether the system solves the voting data availability problem?  How will you judge whether it is secure?  What security considerations must you make for every detail of your project?
+
+\paragraph{Overall Evaluation}
+I hope not to offend, but I just wrote more on an evaluation than your proposal itself.  I'm disappointed because I think this is a very interesting project and I wish the proposal discussed the details of your plan.  Hopefully you will keep us updated in class.
+\end{document}

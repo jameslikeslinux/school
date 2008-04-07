@@ -1,0 +1,62 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{url}
+
+\title{Progress Report}
+\author{James Lee\\
+	\small Computer Science and Electrical Engineering\\
+	\small University of Maryland Baltimore County\\
+	\small\tt jlee23@umbc.edu}
+\date{March 23, 2008}
+
+\begin{document}
+\maketitle
+
+\section*{Progress}
+So far I have completed a written specification of the P2P protocol that I will implement on top of Tor.  It contains the message formats between hubs and clients and recommendations on how such a system should be implemented.
+
+It was difficult to come up with a robust protocol.  I'm sure I will be changing it as I implement it to make it more resilliant to malicious users.  I borrowed ideas from the (poorly documented) Direct Connect protocol until I can see how they actually work.
+
+As far as the implementation goes, I have already been experimenting with ways to control Tor from Java.  Right now, the configuration is written out in code to a file, then Tor is started.  I would like to use the Tor control protocol as originally proposed to make the configuration more dynamic rather than using flat files.
+
+I have also mocked up a user intereface for the client presenting a list of online users, a chat area, a search area, and a file transfer area.  The user interface does not currently do anything, though.
+
+In the next two weeks I must complete the implementation of the hub and client.
+
+\section*{Updated Schedule}
+I missed a couple of my original milestones, but I think I have enough half-completed work that I can complete all my goals on the following dates comfortably.
+
+\begin{center}
+\begin{tabular}{ll}
+\multicolumn{1}{c}{\bf Date} & \multicolumn{1}{c}{\bf Milestone}\\
+\hline
+March 16 & Protocols defined and documented\\
+March 24 & Progress report\\
+March 30 & Tor configuration library and hub complete\\
+April 6 & Client, user interface and installer completed\\
+April 14 & Complete draft report and draft presentation\\
+April 21 & Final presentation\\
+May 5 & Final report
+\end{tabular}
+\end{center}
+
+\section*{Draft Report Outline}
+\begin{description}
+\item[Introduction] An overview of the paper.
+\item[Motivation] This can be adapted from the project proposal.
+\item[Previous Work] This can be adapted from the project proposal.
+\item[Design Overview] A summary of the specification.
+\item[Implementation Overview] A summary of the hub and client implementation of the specification.
+\item[Analysis] A discussion of how the design and implementation solves the proposed problem.
+\item[Conclusion] Wrap up the paper; discuss open problems.
+\item[Appendix: Protocol Specification] An attached copy of one of the project's deliverables.
+\end{description}
+
+\nocite{dc-protocol}
+\nocite{tor-ctl}
+\nocite{tor-design}
+
+\bibliographystyle{unsrturl}
+\bibliography{progress}
+\end{document}

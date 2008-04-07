@@ -106,7 +106,7 @@ Design Goals
 			- Anyone who can see both ends of a circuit can time
 			  data or track the volume of data to link
 			  communication.
-		* Tor protocol normalization
+		* No protocol normalization
 			- Tor will not strip out identifying information from
 			  the application-level protocol.
 		* Not steganographic
@@ -119,7 +119,6 @@ Design Goals
 		  network traffic.
 		* He can generate, modify, delete, or delay traffic, and he can
 		  operate an OR of his own.
-		* XXX should this be included?
 
 Tor Design
 	Overview
@@ -224,3 +223,27 @@ Tor Design
 		  applications resolve domain names before sending the request
 		  through SOCKS, and this will reveal the user to the DNS
 		  server.
+
+	Rendezvous Points and Hidden Services
+		* This is pretty much straight out of 5.1, leaving out all the
+		  encryption details to make it easier to explain.
+		* Bob chooses some introduction points, and advertises them on
+		  the the directory servers.
+		* Bob builds a circuit to each of his introduction points and
+		  tells them to wait for requests.
+		* If Alice wants to access Bob's service, she first chooses an
+		  OR to be a rendezvous point (RP) for her connection to Bob.
+		* She builds a circuit to the RP and gives it a random cookie.
+		* Then she anonymously connects to one of Bob's introduction
+		  points as discovered from the directory servers and gives it
+		  the RP and same cookie.
+		* The introduction point gives Bob the information.
+		* If Bob wants to connect to Alice, then he can establish a
+		  circuit to the RP, give it the cookie.
+		* If the cookies match, the RP will join the two circuits and
+		  Alice can talk to Bob as with any Tor circuit.
+
+		* The information necessary to find the introduction points
+		  (public key to verify advertisement signature) can be encoded
+		  in a domain name so that applications can access hidden
+		  services through Tor without modification.

@@ -5,10 +5,10 @@
 \newcommand{\s}{\hspace{1em}}
 
 \title{Building an Anonymous Community on Tor}
-\author{James Lee\\
-	\small Computer Science and Electrical Engineering\\
-	\small University of Maryland Baltimore County\\
-	\small\tt jlee23@umbc.edu}
+\author{James Lee\thanks{
+	Department of Computer Science and Electrical Engineering,
+	University of Maryland Baltimore County,
+	{\tt jlee23@umbc.edu}}}
 \date{\today}
 
 \begin{document}
@@ -36,7 +36,7 @@ Typical communication on the Internet is not anonymous.  All users can be identi
 
 Why would someone want to participate in a community?  Communities are collections of users with some shared interest.  All the users have a way to discover all the other users in the community, that way they can meet other people with a shared interest.  In communities where users are identifiable, usually by a nick name, it is possible to build a reputation with the other users, even develop friendships.  Simply put, communities are a fun and easy way of interacting with other people.
 
-How can a community be built?  Most importantly, there must be some way for users to know the other members of the community.  Users could be known could be by nick name or pseudonym.  The users must be easy to discover.  If users can't be discovered, there is no way for someone to find someone else with whom to share their common interest.  Most users will also need some reason to join a community.  Some will expect some sort of content.  A community must also be easy to join.  If it is too difficult, users will not feel it is worth their time.  I am proposing that the ability to communicate and share files anonymously will entice users to join an anonymous community.
+How can a community be built?  Most importantly, there must be some way for users to know the other members of the community.  Users could be known could be by nick name or pseudonym.  The users must be easy to discover.  If users can't be discovered, there is no way for someone to find someone else with whom to share their common interest.  Most users will also need some reason to join a community.  Some will expect some sort of content.  A community must also be easy to join.  If it is too dificult, users will not feel it is worth their time.  I am proposing that the ability to communicate and share files anonymously will entice users to join an anonymous community.
 
 Users will have those abilities through the design and implementation of a new P2P protocol similar to Direct Connect.  They will be kept anonymous by Tor.
 
@@ -47,11 +47,11 @@ Why use Tor to anonymize communication?  Tor is a well-studied, mature implement
 \section{Previous Work}
 There is a countless number of ways to build a community on the public Internet.  Very few of them guarantee anonymity and none of them are built on Tor.  Most of the work on Tor attempts to make it easier for a single user to join the network.  For example, Torbutton is an extension to Firefox which gives users a one-click way to enable access to the Tor network.  Its ease of installation and use make Tor more popular to users who wish to remain anonymous to public Internet sites.  Another popular utility, Vidalia, provides a very easy GUI for managing Tor, but provides no other means for Tor users to communicate.  That functionality must be provided by another program.
 
-One such program which enables Tor users to communicate anonymously is TorChat.  Clients are configured to act as hidden services on the Tor network, each one being assigned a unique 16 character pseudonym.  Then a user may talk to another single user identified by their pseudonym.  TorChat is not suitable for building an anonymous community.  Due to its decentralized design, the only way for users to communicate with other users is to already know them and ask them for their pseudonym.  This make discovering new users very difficult.
+One such program which enables Tor users to communicate anonymously is TorChat.  Clients are configured to act as hidden services on the Tor network, each one being assigned a unique 16 character pseudonym.  Then a user may talk to another single user identified by their pseudonym.  TorChat is not suitable for building an anonymous community.  Due to its decentralized design, the only way for users to communicate with other users is to already know them and ask them for their psuedonym.  This make discovering new users very difficult.
 
 However, TorChat does make setup easy on Windows.  It comes bundled with a Tor client which it configures and runs automatically.  The Linux client, on the other hand, requires users to configure Tor manually, which might restrict them from joining.  For a community to be built, it must be easy for as many people as possible to join, and that means considering all the major operating systems equally.  My project will, like TorChat on Windows, bundle, install, configure, and run Tor automatically and transparently on both Windows and Linux so that it is easy for as many users to join as possible.
 
-My project will build it's community around hubs based on Direct Connect.  Direct Connect has proven community building qualities.  For example, several Direct Connect hubs have existed on the UMBC campus for years.  A student can download any Direct Connect client, type the IP address of the hub, and begin interacting with other students.  Users generally discover the address of the hub through word of mouth.  The pseudonym of an anonymous hub can be discovered the same way.
+My project will build it's community around hubs based on Direct Connect.  Direct Connect has proven community building qualities.  For example, several Direct Connect hubs have existed on the UMBC camupus for years.  A student can download any Direct Connect client, type the IP address of the hub, and begin interacting with other students.  Users generally discover the address of the hub through word of mouth.  The pseudonym of an anonymous hub can be discovered the same way.
 
 Once students have joined the hub, they have the ability to chat and share files with other students.  They can ask questions about classes, voice opinions about instructors, or talk about campus events.
 
@@ -73,7 +73,7 @@ Applications will also need the ability to tell the library that it is done with
 
 Next, a protocol will be defined for client-to-hub communication and client-to-client communication.  The hub will stand as a central point for directory listing, chatting, and search query propagation and results collection.  A client will have the ability to connect to a single hub, chat, private message, search, display file lists, and transfer files.
 
-A client must have the ability to connect to a hub through Tor by its hidden service pseudonym and be able to tell the hub its own pseudonym.  When the hub receives a connection, it will add the user's pseudonym to a list of online users (directory), and send the list back to the client.  It must also notify the other online users that someone logged on so that they may update their own directory.
+A client must have the ability to connect to a hub through Tor by its hidden service pseudonym and be able to tell the hub its own psuedonym.  When the hub receives a connection, it will add the user's pseudonym to a list of online users (directory), and send the list back to the client.  It must also notify the other online users that someone logged on so that they may update their own directory.
 
 Clients must have some way to prove who they are to the hub, otherwise any user could send messages to the hub claiming to be someone else's pseudonym.  So in addition to sending back a user list to the client upon connection, the hub will associate a random key to the pseudonym and tell it only to client who connected.  Any subsequent messages the client sends to the hub must include both their pseudonym and their assigned key.  Any other user won't know this key so they won't be able to pretend to be someone else.
 
@@ -94,10 +94,10 @@ The protocol described above will be formally documented, then implemented in th
 Finally, in an effort to make the client even easier to use, I will create a Java Web Start launcher for it so that it can be installed in one click on Windows and Linux.
 
 \section{Deliverables}
-The hub and client protocols will be formally documented.  The Java source code of their implementation will be provided.  A Java Web Start launcher for the client will be created.  A final report, presentation, and slide show will be created.
+The hub and client protocols will be formally documented.  The Java source code of their implementation will be provided.  A Java Web Start launcher for the client will be created.  A final report, presentation, nad slide show will be created.
 
 \section{Issues}
-The most difficult issue that I foresee is how to realistically test a P2P system.  It would be impractical to actually install the client on several computers.  Fortunately Linux provides means to create virtual network interfaces.  Using that capability, I can bind multiple instances of the client to different virtual network interfaces.
+The most difficult issue that I forese is how to realistically test a P2P system.  It would be impractical to actually install the client on several computers.  Fortunately Linux provides means to create virtual network interfaces.  Using that capability, I can bind multiple instances of the client to different virtual network interfaces.
 
 \section{Bibliography}
 \emph{To be completed...}
@@ -109,7 +109,7 @@ My finest application is iriverter, started in early 2005.  It is a Java and SWT
 
 I have also made significant contributions to the DD-WRT router firmware project, integrating the SixXS IPv6 configuration client into DD-WRT's web configuration interface.
 
-I have networking experience gained from writing an HTTP client library and curses interface as a project in my networking class and a song metadata submitter compliant with the Audioscrobbler specification.
+I have networking experience gained from writing an HTTP client library and curses interface as a project in my networking class and a song metadata submitter complient with the Audioscrobbler specification.
 
 \section{Schedule}
 The following deliverable items will be completed by the dates listed below.

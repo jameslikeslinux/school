@@ -1,0 +1,134 @@
+\documentclass[default,pdf,colorBG,slideColor]{prosper}
+\hypersetup{pdfpagemode=FullScreen}
+
+\title{Anonymous Mixes}
+\subtitle{As Proposed by David Chaum}
+\author{James Lee}
+\email{jlee23@umbc.edu}
+\institution{University of Maryland, Baltimore County}
+
+\begin{document}
+\maketitle
+
+\begin{slide}{Outline}
+\begin{itemize}
+\item Introduction
+\item Public Key Cryptography
+\item Assumptions
+\item Mixes
+\item Return Addresses
+\item Digital Pseudonyms
+\item Conclusion
+\item Questions
+\item References
+\end{itemize}
+\end{slide}
+
+\begin{slide}{``The Traffic Analysis Problem''}
+\begin{itemize}
+\item Anyone along a physical circuit can watch traffic flow.
+\item Trying to keep confidential who converses with whom and when.
+\item Solution based on public key cryptography.
+\item Previous work required common authority.
+\item Now all participants are authorities.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Public Key Cryptography}
+\begin{itemize}
+\item Solves the key distribution problem.
+\item User creates two keys: public $K$ and private $K^{-1}$.
+\item Public and private keys are inverses of each other.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Sealing a Message}
+\begin{itemize}
+\item A message is \emph{sealed} by any user so that only a certain user can decrypt it.
+\item $K(R, X)=Y$
+\item Append random bits $R$ before message $X$ to make brute-force attacks harder.
+\item Designated user can decrypt using their private key: $K^{-1}(Y)=R, X$.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Signing a Message}
+\begin{itemize}
+\item A message is \emph{signed} so that any user can verify its source.
+\item $K^{-1}(C, X)=Y$
+\item Any user can decrypt using the public key of the claimed source: $K(Y)=C, X$.
+\item If $C$ matches expected value, then $X$ is actually from the claimed source.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Assumptions}
+\begin{enumerate}
+\item The cryptographic algorithm is strong.
+\item Anyone may watch the underlying communication system.  Anyone may interfere.
+\end{enumerate}
+\end{slide}
+
+\begin{slide}{Mixes}
+\begin{itemize}
+\item A \emph{mix} is a computer which accepts and delivers messages.
+\item A user wishing to remain anonymous to the recipient will send a message through the mix.
+\item Every participant in the system has a known public key.
+\item User seals message for the recipient, then seals the sealed message with the recipient's address for the mix.
+\item Mix will send the original sealed message to the designated address.
+\item $K_{mix}(R_{mix}, K_{dest}(R_{dest}, M), A)\rightarrow K_{dest}(R_{dest}, M), A$
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Mixes (cont.)}
+\begin{itemize}
+\item Purpose of mixes is to hide correspondences between the items in the input and output.
+\item Order of arrival is hidden by outputting messages in uniformly sized, lexicographically ordered batches.
+\item Special care must be taken to make sure duplicate messages are never sent twice.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Signed Receipts}
+\begin{itemize}
+\item How does a user know if the mix discarded the message?
+\item Mix sends the signed batch back to the user.
+\item User checks the signature.
+\item Checks if original message exists in the batch.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Cascades}
+\begin{itemize}
+\item Series of mixes.
+\item Prevents any single mix from knowing both the source and destination of a message.
+\item $K_{mix_1}(R_{mix_1}, K_{mix_2}(R_{mix_2}, K_{dest}(R_{dest}, M), A), A_{mix_2})$
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Return Addresses}
+\begin{itemize}
+\item Alice can form an untraceable return address: $K_{mix}(R_{mix}, A_{alice}), K_{alice}$.
+\item Alice can send the address to Bob in an anonymous message.
+\item For Bob to send a reply, he forms a message for a mix like: $K_{mix}(R_{mix}, A_{alice}), K_{alice}(R_{bob}, M)$.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Digital Pseudonyms}
+\begin{itemize}
+\item Public key used to identify a user.
+\item A authority holds a \emph{roster} of trusted pseudonyms.
+\item Applicant sends his public key, $K$, to the authority through a mix.
+\item Example: Registered voters can submit a signed, anonymous ballot $K_{mix}(R_{mix}, K, K^{-1}(C, Vote))$.
+\item Recipient of ballot checks $K$ against roster and records the vote.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Questions}
+
+\end{slide}
+
+\begin{slide}{References}
+\begin{itemize}
+\item David Chaum. Untraceable electronic mail, return addresses, and digital pseudonyms. In \emph{Communications of the ACM 4(2)}, February 1981.
+\item George Danezis and Claudia Diaz. A Survey of Anonymous Communication Channels. Submitted to the \emph{Journal of Privacy Technology}, 40 pages, 2006.
+\end{itemize}
+\end{slide}
+\end{document}

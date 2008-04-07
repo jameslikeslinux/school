@@ -1,0 +1,140 @@
+\documentclass[default,pdf,colorBG,slideColor]{prosper}
+%\hypersetup{pdfpagemode=FullScreen}
+
+\usepackage{graphicx}
+
+\title{Unix Security}
+\subtitle{In the CSEE Department}
+\author{James Lee}
+\email{jlee23@cs.umbc.edu}
+\institution{University of Maryland Baltimore County}
+
+\begin{document}
+\maketitle
+
+\begin{slide}{About Unix Security}
+\begin{itemize}
+\item Unix was designed from the ground up to be a multi-user, multi-tasking operating system.
+\item Security always considered to prevent users and processes from interfering with other users and processes.
+\item There are hundreds of variants of Unix, every one implemented differently and containing different components.
+\item Security should be considered on a case-by-case basis.
+% segue into CSEE
+\end{itemize}
+\end{slide}
+
+\begin{slide}{An Overview of CSEE Systems}
+\begin{itemize}
+\item We maintain over 100 Red Hat Enterprise Linux 4 and 5 workstations.
+\item Plus about 20 Solaris 8 and 10 and RHEL 5 servers providing:
+\begin{itemize}
+\item Mail
+\item Web
+\item Filesystems
+\item Databases
+\item Backup
+\item Printing
+\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{In the beginning...}
+\begin{itemize}
+\item All systems running Solaris 7 or 8 or Red Hat 9.
+\item They all had to be installed manually.
+\item Solaris 7 and Red Hat 9 were no longer supported by the vendor.
+\item Solaris patched only semi-annually.
+\item Red Hat workstations \emph{never} received updates.
+\end{itemize}
+\end{slide}
+
+% Quick note of why we updated why we chose what we chose
+%  * Compatibility with old system
+%  * Commercially supported
+%  * Well trusted and liked
+
+% Note: I'll mostly be talking about Linux since it was my baby, but there are analogs in Solaris for everything that I talk about
+
+\begin{slide}{Simplifying the Installation}
+\begin{itemize}
+\item Workstations and servers can be installed in a couple of hours without administrator interaction.
+\item Accomplished in RHEL with Kickstart scripts.
+\end{itemize}
+\scriptsize
+\begin{verbatim}
+#Use Web installation
+url --url http://util.cs.umbc.edu/mrepo/rhel5c-csee-i386
+#Disk partitioning information
+part / --fstype ext3 --size 1 --grow 
+%packages --resolvedeps
+*
+-java-1.4.2-ibm
+%post
+/usr/sbin/cfagent -q
+\end{verbatim}
+\end{slide}
+
+\begin{slide}{mrepo}
+\begin{itemize}
+\item How do you keep systems up-to-date with the latest security patches?
+% RHN?  What if RHN isn't fast enough to release?  What if they distribute a bad fix?
+\item How do you distribute new software? % (Software not in RHN)
+\item We use yum with repositories made by mrepo. % Containing updates from RHN and our custom rolled rpms
+% If RHN releases a bad patch, we don't have to include in in our mrepo repository.
+% Nothing else of note here wrt security, except yum does support GPG signature verification on rpms, though we don't use this feature now, we should probably consider it in the future.
+
+% Maybe show http://util.cs.umbc.edu/mrepo
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Cfengine}
+\begin{itemize}
+\item Older systems used our Cfengine 1 infrastructure.
+\item Cfengine 1 had no way to securely distribute configuration scripts.
+\item Scripts were readable by anyone on an NFS share.
+% Talk about NFS security
+% * No authentication (unlike AFS)
+% * Allow or disallow by IP address/hostname
+% * Permit or not permit root access
+% * uid blah blah
+% * Mitigated by locking down systems physically: bios, grub passwords
+\item Made distributing sensitive configurations using Cfengine impossible.
+% Talk about old password
+% * No one had it (use sudo)
+% * Never changed it
+% * Changing required manual change on every system
+%
+% Note complexity and obsolescence of old configuration scripts
+\item Cfengine 2 uses PKI to secure transmission of configurations scripts.
+% Talk about how host gets its own keys, the server's public key, and how the server gets the hosts' public keys.
+% Talk about changing password.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{NIS}
+\begin{itemize}
+\item NIS used to distribute user information on the network.
+\item Supplements the /etc/{passwd,shadow,groups} locally installed on the system.
+% Show ypcat passwd
+% Talk about comparing NIS gids with vendor installed gids
+\item Password hashes could be distributed this way too.
+\item Hashes in NIS readable by anyone.
+\item Huge security problem.  Solution?  Use Kerberos.
+% Note {passwd,shadow}nonkrb
+% Also note "free" account expiry as a benefit!
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Servers}
+\begin{itemize}
+% Workstations are less valuable, they can only be accessed from within the UMBC network or physically.
+% They access data such as mail and home directories through NFS which we secure as best as we can.
+% If they become compromized, we can just reinstall them.
+\item Kept physically secure in departmental server room.
+\item Firewalled to only allow access to certain ports from the outside.
+\item We disable all services execpt the one the server is providing.
+\item We disallow ssh access from anyone except our group.
+\item All other security concerns addressed on a program-by-program basis.
+% If there is time, ask if anyone has questions about securing a particular service.
+\end{itemize}
+\end{slide}
+\end{document}

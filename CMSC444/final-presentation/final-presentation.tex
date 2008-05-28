@@ -15,6 +15,23 @@
 \end{frame}
 
 \section{Introduction}
+\subsection{TorConnect}
+\begin{frame}{What is TorConnect?}
+\begin{itemize}
+\item  TorConnect is an anonymous P2P protocol.
+% Based on Direct Connect
+% Hub keeps track of users
+
+\pause
+\item Uses Tor to hide users' true IP addresses.
+
+\pause
+\item Uses Tor hidden services to keep users accessible.
+
+\pause
+\item Java hub and client implementation.
+\end{itemize}
+\end{frame}
 
 \subsection{Motivation}
 \begin{frame}{Motivation}
@@ -169,9 +186,42 @@ After a handshake, you can treat the connection like any other TCP stream.  So y
 \end{block}
 \end{frame}
 
+\subsection{Usability}
+\begin{frame}{Usability}
+\begin{itemize}
+\item Software requires no configuration.
+\item Software requires no installation.
+\item Behaves similar to Direct Connect.
+\item However, TorConnect is completely unusable.
+% Tor is just too slow.
+\end{itemize}
+\end{frame}
+
+\subsection{Open Problems}
+\begin{frame}{Open Problems}
+\begin{itemize}
+\item How can speed and reliability be improved?
+% Probably can't when relying on volunteers.
+% Require participants to run a router?
+% Require certain bandwidths?
+
+\pause
+\item Use cryptography instead of handshakes.
+
+\pause
+\item Adapt a more mature P2P protocol.
+% Mine lacks features like pausing, swarming.
+\end{itemize}
+\end{frame}
+
 \appendix
 \section{References}
 ~\nocite{tor-design}
+~\nocite{chaum-mix}
+~\nocite{tor-chat}
+~\nocite{wiki-spoofing}
+~\nocite{tor-control}
+~\nocite{tor-ctl}
 \bibliographystyle{plainurl}
 \bibliography{final-presentation}
 

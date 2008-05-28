@@ -125,7 +125,7 @@ Most work on Tor attempts to make it easier for a single user to access the netw
 
 \subsection{Protocol}
 \begin{frame}{The Thing About the Protocol}
-After a handshake, you can treat the connection like any other TCP stream.  So you adapt just about any TCP protocol.
+After a handshake, you can treat the connection like any other TCP stream.  So you can adapt just about any TCP protocol.
 % Proposal called for identifying tokens in every message instead of handshakes.
 % After handshaking, any protocol can be used, just replace IP addresses with Tor pseudonyms where applicable.
 % Made protocol design a boring exercise.
@@ -138,6 +138,35 @@ After a handshake, you can treat the connection like any other TCP stream.  So y
 \begin{center}
 \includegraphics[width=.9\textwidth]{architecture.pdf}
 \end{center}
+\end{frame}
+
+\section{Analysis}
+
+\subsection{Security}
+\begin{frame}{Security}
+\begin{block}{Security means:}
+\begin{itemize}
+\pause
+\item It is not possible to determine the actual identity of any user.
+\pause
+\item Users are the pseudoanonymous identity that they claim.
+\end{itemize}
+\end{block}
+
+\begin{block}{}
+\begin{itemize}
+\pause
+\item The protocol contains no identifying information
+% Does not stop the user from exposing themselves accidentally.
+
+\pause
+\item Handshakes really do prevent users from spoofing their identity.
+% Suppose a client lies about their identity...
+
+% The only new work I did besides the proto and the handshake was the implementation.
+% So any security problems must lie in the implementation or the 3rd party utilities (including Tor itself).
+\end{itemize}
+\end{block}
 \end{frame}
 
 \appendix

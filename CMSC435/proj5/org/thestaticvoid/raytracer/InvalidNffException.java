@@ -7,6 +7,8 @@
 package org.thestaticvoid.raytracer;
 
 public class InvalidNffException extends Exception {
+	private static final long serialVersionUID = 1L;
+
 	public InvalidNffException(String exception) {
 		super(exception);
 	}

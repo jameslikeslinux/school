@@ -8,12 +8,11 @@ package org.thestaticvoid.raytracer;
 
 public class Sphere extends SceneObject {
 	private Vector3 center;
-	private double radius, radiusSq;
+	private double radiusSq;
 	
 	public Sphere(Scene scene, Vector3 center, double radius) {
 		super(scene);
 		this.center = center;
-		this.radius = radius;
 		radiusSq = radius * radius;
 	}
 	

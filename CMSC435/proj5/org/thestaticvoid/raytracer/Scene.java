@@ -14,7 +14,6 @@ import java.text.*;
 public class Scene {
 	private Vector3 viewFrom, viewAt, viewUp;
 	private double viewAngle;
-	private double viewHither;
 	private int resolutionX, resolutionY;
 	private Vector3 backgroundColor;
 	private Fill currentFill;
@@ -49,7 +48,7 @@ public class Scene {
 	}
 	
 	public void setViewHither(double viewHither) {
-		this.viewHither = viewHither;
+		// this.viewHither = viewHither; (never used)
 	}
 	
 	public void setResolution(int resolutionX, int resolutionY) {

@@ -1,0 +1,15 @@
+James Lee
+jameslee@gwu.edu
+
+CSCI 6331 -- Cryptography
+Homework 3
+
+See 'output.txt' for the table of the top ten biases.  The table was computed
+using the Erlang script contained in 'hw3' (executable file).  The program can
+be run like:
+
+    $ ./hw3
+
+It takes a long time (~5 minutes) to run on hobbes because Erlang doesn't seem
+to want to compile the code to native SPARC instructions.  It works much better
+on x86.

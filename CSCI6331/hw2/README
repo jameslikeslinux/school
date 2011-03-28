@@ -1,0 +1,52 @@
+James Lee
+jameslee@gwu.edu
+
+CSCI 6331 -- Cryptography
+Homework 2
+
+Part A: SPN
+
+To run this code:
+
+  $ cd spn
+  $ gmake
+  ...output follows...
+
+The makefile compiles the code, generates a random input file, and runs the
+program against the input file.  The output of the program becomes the input
+for its next execution, so 'gmake' can be run multiple times to see that:
+
+  x = D_K(E_K(x))
+
+The input is defined as base 10 representations of all values.  There is a line
+of 5 32-bit keys, a line of 32 numbers representing which bit position the
+index of the number should be moved to (permutation lookup table), a line of
+256 8-bit numbers representing a substitution table, the length of the message
+in 32-bit blocks, the message shown as 32-bit numbers, and a line with a 0 for
+encryption or 1 for decryption.
+
+The message length is represented a blocks so the program is guaranteed to get
+inputs aligned to the block size.  Thus message padding is not a concern at
+this level.
+
+
+Part B: Feistel Cipher
+
+a. To run this code:
+
+  $ cd feistel
+  $ gmake
+
+This makefile behaves in the same way as Part A.  It compiles the code,
+randomly generates an input file, and runs the code against it.
+
+
+b. To run the code for part 'b':
+
+  $ cd feistel2
+  $ gmake
+
+Part b of this problem implements a key schedule using a cyclic bit shift left
+by 2 for each round.  This problem runs the input through two rounds.
+
+ALL CODE HAS BEEN TESTED ON 'hobbes.seas.gwu.edu'.

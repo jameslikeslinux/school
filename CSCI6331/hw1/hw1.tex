@@ -1,0 +1,79 @@
+\documentclass{amsart}
+
+\title{Homework 1}
+\author{James Lee\\
+\texttt{jameslee@gwu.edu}}
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+\item There is no key for the affine cipher with alphabet $\{A, B, C,\ldots, Z\}$ that encrypts ``NOT'' to ``AXE''.  The affine encryption function is
+\begin{displaymath}
+e(x)=ax+b\mod m
+\end{displaymath}
+If there were a key, then for each character, we should be able to solve for the same $a$ and $b$.
+\begin{align*}
+27-14a&=24-15a\\
+3&=-a\\
+a&=-3\\
+\\
+27&=14(-3)+b\\
+b&=69\\
+\\
+24&=15(-3)+69\\
+24&=24\\
+\\
+31&=20(-3)+69\\
+31&\neq 9
+\end{align*}
+
+\item
+\begin{enumerate}
+\item There are $n!$ bit permutations of strings of length $n$.  This can be thought of as choosing characters for each position.  At the first position, you have a choice of all $n$ characters and the character you choose is removed from the selection pool for the next position to avoid duplicates.  So at the next position, you have a choice of $n-1$ characters, and at the position after that you have a choice of $n-2$ characters and so on.
+
+One of the choices that we have is to select the exact same characters in exactly the same postions.  If that is not considered a permutation of the original string, then there are actually $n!-1$ possible bit permutations.
+
+\item There are $n$ possible circular right shifts of strings of length $n$.  After the $n$th rotation of the last character in the string to the first character, you will end up with the original string.  If that is not considered circularly right shifted from its original value, then there are actually $n-1$ possible circular right shifts.
+
+\item For a language of $n$ characters, there are $n\times n$ possible strings of length $n$.  So a one-to-one function $f:\Sigma^n\mapsto\Sigma^n$ will contain $n^2$ strings in each the domain and range.  In order to maintain a one-to-one mapping, the range can be rearranged but strings cannot be duplicated.  So there are $(n^2)!$ possible mappings.
+\end{enumerate}
+
+\item One possible one-to-one mapping that is not a bit permutation would be to map the $i$th possible string in a language containing $n$ possible strings to the $n-i$th string.  For example, consider strings of length 3 using the English alphabet.  This function would map:
+\begin{gather*}
+AAA\mapsto ZZZ\\
+AAB\mapsto ZZY\\
+\cdots
+\end{gather*}
+
+\item
+\begin{enumerate}
+\item
+\begin{enumerate}
+\item For a shift cipher over $\mathbb{Z}_m$ there are $m$ keys.  Any element in $\mathbb{Z}_m$ shifted by the key $m$ would be the same element:
+\begin{displaymath}
+x = e_m(x)=x+m\mod m
+\end{displaymath}
+
+\item We already established that there are only $m$ keys for the alphabet $\mathbb{Z}_m$ so any cipher text can have $m$ possible messages, one for each possible key:
+\begin{displaymath}
+d_k(x) = x - k\mod m
+\end{displaymath}
+\end{enumerate}
+
+\item
+\begin{enumerate}
+\item There are $m^2$ possible keys for this cipher, choosing any two values in $\mathbb{Z}_m$.
+\item A ciphertext $c=c_1c_2\ldots c_n$  is decrypted using the key $k=(k_1, k_2)$, in the following way:
+\begin{itemize}
+\item If $c_i$ is even and $k_1$ is odd, then we shift $c_i$ back by $k_1$.
+\item If $c_i$ is even and $k_2$ is even, then we shift $c_i$ back by $k_2$.
+\item If $c_i$ is odd and $k_1$ is even, then we shift $c_i$ back by $k_1$.
+\item If $c_i$ is odd and $k_2$ is odd, then we shift $c_i$ back by $k_2$.
+\end{itemize}
+\item Given that there are two possible plaintext mappings for each element in the ciphertext, there would be $2^n$ possible messages for a ciphertext of length $n$.
+\item The benefit to this cipher is that the keyspace is much larger than a simple shift cipher with one key, however the ciphertexts are ambiguous.  It would be difficult to get the plaintext back from the ciphertext given the key.
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+\end{document}

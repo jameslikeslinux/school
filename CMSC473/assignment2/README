@@ -1,0 +1,26 @@
+CMSC 473 Assignment 2
+James Lee <jlee23@umbc.edu>
+
+A grammar and parser for English noun phrases.
+
+To run this program, a Common Lisp environment is required.  I tested it with
+clisp:
+
+$ clisp
+> (load "np-parser.lisp")
+> (parse "the four beautiful airplanes that finished the runway")
+
+
+Unlike Assignment 1, this one unfortunately doesn't work for me.  I have spent
+hours debugging and must regretfully submit it as it is.  The first thing I
+implemented was the "unify" function which directly follows the algorithm
+listed in Figure 11.8 of the book.  All the feature structures I have unified
+with this function have return the expected result.  Next I decided how I
+should represent my grammar rules.  I eliminated all the non-terminals that
+dealt with agreement and added the feature structures represented by DAGs which
+are lists of arcs.  I think my choice to represent feature structures in this
+way have made things more difficult.  Lisp provides all of features I needed to
+represent this such as the ability to share lists using real pointers rather
+than arcs labeled pointers.  Regardless, I tried to make the best out of it by
+working on the modifications to the Earley parser as per Figure 11.12 of the
+book, including the changes to the "Earley state," and completer functions.

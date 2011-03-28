@@ -1,0 +1,11 @@
+CMSC 473 Assignment 1
+James Lee <jlee23@umbc.edu>
+
+A grammar and parser for English noun phrases.
+
+To run this program, a Common Lisp environment is required.  I tested it with
+clisp:
+
+$ clisp
+> (load "np-parser.lisp")
+> (parse "the four beautiful airplanes that finished the runway")

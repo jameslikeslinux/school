@@ -1,0 +1,169 @@
+Assigment 4: Creating TMRs
+James Lee <jlee23@umbc.edu>
+
+
+
+Two astronauts will conduct a risky spacewalk at the International Space
+Station to fix a torn solar panel.
+
+date-1
+	year	|2007|
+	month	|11|
+	day	|15|
+
+supervise-1
+	agent		set-1
+	theme		spacewalk-1
+	location	space-station-1
+	purpose		repair-1
+	time		> date-1
+
+astronaut-1
+
+astronaut-2
+
+set-1
+	elements	astronaut-1 astronaut-2
+
+spacewalk-1
+	safety-attribute	0.3
+
+space-station-1
+	name	"International Space Station"
+
+repair-1
+	theme	tear-event-1
+
+tear-event-1
+	theme	solar-panel-1
+	time	< date-1
+
+solar-panel-1
+
+
+===============================================================================
+
+
+NASA wanted the astronauts to tackle the job Friday.
+
+date-2
+	year	|2007|
+	month	|11|
+	day	|16|
+
+modality-1
+	type		volitive
+	attributed-to	space-organization-1
+	scope		confront-1
+	time		< date-1
+
+space-organization-1
+	name	"NASA"
+
+confront-1
+	agent	set-2
+	theme	work-activity-1
+	time	date-2
+
+set-2
+	set-member-type	astronaut
+
+work-activity-1
+
+coreference set-2 set-1
+coreference work-activity-1 repair-1
+
+
+===============================================================================
+
+
+NASA made mission control fine-tune the repair plan.
+
+event-1
+	time		< date-1
+	agent		mission-control-1
+	caused-by	space-organization-1
+	effect		adjust-1
+
+mission-control-1
+
+adjust-1
+	theme	plan-1
+
+repair-1
+
+plan-1
+	controls repair-1
+
+
+===============================================================================
+
+
+The agency has conducted emergency spacewalks before.
+
+supervise-2
+	agent	organization-1
+	theme	set-3
+	time	< date-1
+
+organization-1
+
+set-3
+	set-member-type spacewalk
+	urgency 1
+
+coreference organization-1 space-organization-1
+
+
+===============================================================================
+
+
+Spacewalkers might experience an electrical shock.
+
+modality-2
+	type		epistimic
+	value		0.5
+	attributed-to	set-4
+	scope		electrical-shock-1
+
+set-4
+	set-member-type	spacewalker
+
+electrical-shock-1
+	experiencer	set-4
+
+
+===============================================================================
+
+
+The repair could jeopardize a part of the space shuttle that will be used as a
+makeshift repair platform.
+
+
+modality-3
+	type		epistimic
+	value		0.5
+	attributed-to	repair-2
+	scope		jeopardize-1
+
+repair-2
+
+jeopardize-1
+	agent	repair-2
+	theme	object-1
+
+space-shuttle-1
+
+object-1
+	part-of-object space-shuttle-1
+
+functions-like-1
+	domain	object-1
+	range	platform-1
+	time	> date-1
+
+platform-1
+	instrument-of	repair
+	duration	0.5
+
+coreference repair-2 repair-1

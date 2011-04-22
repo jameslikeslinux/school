@@ -1,0 +1,98 @@
+#!/usr/bin/env escript
+
+-mode(compile).
+-compile([export_all, native]).
+
+%% The number of top biases to print
+-define(RESULTS, 256).
+
+%% Comment these two lines:
+%-define(SBOX(X), (X + 171) rem 256).
+-define(SBOX(X), hw4_sbox_table(X)).
+-define(BITS, 4).
+%% ...and uncomment these two lines:
+%-define(SBOX(X), heys_sbox(X)).
+%-define(BITS, 4).
+%% ...to test with the S-box defined in Heys's paper.
+
+%% The number of possible inputs/outputs
+-define(RANGE, trunc(math:pow(2, ?BITS))).
+
+main(_Args) ->
+    IOs = [{I, ?SBOX(I)} || I <- lists:seq(0, ?RANGE - 1)],
+    IOMasks = [{IMask, OMask} || IMask <- lists:seq(0, ?RANGE - 1), OMask <- lists:seq(0, ?RANGE - 1)],
+
+    %% Swap the comment for next two lines to parallelize (naively)
+    %Biases = rpc:pmap({?MODULE, get_bias}, [IOs], IOMasks),
+    Biases = [{IOMask, get_bias(IOMask, IOs)} || IOMask <- IOMasks],
+
+    TopBiases = lists:sublist(lists:sort(fun({_, A}, {_, B}) -> abs(A) > abs(B) end, Biases), ?RESULTS),
+    print_biases(TopBiases).
+
+print_biases(Biases) ->
+    io:format("------------------------~n"),
+    io:format("|~3s|~5s|~5s|~6s|~n", ["No", "IMask", "OMask", "Bias"]),
+    io:format("------------------------~n"),
+    lists:foldl(fun({{IMask, OMask}, Bias}, I) ->
+        io:format("|~3w|~5.16B|~5.16B|~6.3f|~n", [I, IMask, OMask, Bias]),
+        I + 1
+    end, 1, Biases),
+    io:format("------------------------~n").
+
+get_bias({IMask, OMask}, IOs) ->
+    Eq = lists:foldl(fun({I, O}, Eq) ->
+        case parity_eq(<<(I band IMask):?BITS>>, <<(O band OMask):?BITS>>) of
+            true -> Eq + 1;
+            false -> Eq
+        end
+    end, 0, IOs),
+    (Eq - ?RANGE / 2) / ?RANGE.
+
+parity_eq(<<A1:1,B1:1,C1:1,D1:1,E1:1,F1:1,G1:1,H1:1>>,
+   <<A2:1,B2:1,C2:1,D2:1,E2:1,F2:1,G2:1,H2:1>>) ->
+    A1 bxor B1 bxor C1 bxor D1 bxor E1 bxor F1 bxor G1 bxor H1 ==
+    A2 bxor B2 bxor C2 bxor D2 bxor E2 bxor F2 bxor G2 bxor H2;
+parity_eq(<<A1:1,B1:1,C1:1,D1:1>>,
+   <<A2:1,B2:1,C2:1,D2:1>>) ->
+    A1 bxor B1 bxor C1 bxor D1 ==
+    A2 bxor B2 bxor C2 bxor D2.
+
+heys_sbox(0) -> 2#1110;
+heys_sbox(1) -> 2#0100;
+heys_sbox(2) -> 2#1101;
+heys_sbox(3) -> 2#0001;
+heys_sbox(4) -> 2#0010;
+heys_sbox(5) -> 2#1111;
+heys_sbox(6) -> 2#1011;
+heys_sbox(7) -> 2#1000;
+heys_sbox(8) -> 2#0011;
+heys_sbox(9) -> 2#1010;
+heys_sbox(10) -> 2#0110;
+heys_sbox(11) -> 2#1100;
+heys_sbox(12) -> 2#0101;
+heys_sbox(13) -> 2#1001;
+heys_sbox(14) -> 2#0000;
+heys_sbox(15) -> 2#0111.
+
+%hw4_sbox(A) ->
+%    <<X:4, Y:4>> = <<A>>,
+%    hw4_sbox_table(X) bsl 4 + hw4_sbox_table(Y).
+
+hw4_sbox_table(0) -> 10;
+hw4_sbox_table(1) -> 15;
+hw4_sbox_table(2) -> 3;
+hw4_sbox_table(3) -> 9;
+hw4_sbox_table(4) -> 11;
+hw4_sbox_table(5) -> 8;
+hw4_sbox_table(6) -> 2;
+hw4_sbox_table(7) -> 4;
+hw4_sbox_table(8) -> 14;
+hw4_sbox_table(9) -> 0;
+hw4_sbox_table(10) -> 12;
+hw4_sbox_table(11) -> 1;
+hw4_sbox_table(12) -> 5;
+hw4_sbox_table(13) -> 6;
+hw4_sbox_table(14) -> 13;
+hw4_sbox_table(15) -> 7.
+
+% vim:syntax=erlang

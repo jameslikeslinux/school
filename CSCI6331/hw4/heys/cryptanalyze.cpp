@@ -54,18 +54,19 @@ int main() {
                 bitset<4> ul(dec_sbox[ctl xor kl]);
                 bitset<4> ur(dec_sbox[ctr xor kr]);
 
-                if ((ptbits[8] xor ptbits[9] xor ptbits[11] xor ul[0] xor ul[2] xor ur[0] xor ur[2]) == 0)
+                if (ptbits[8] xor ptbits[9] xor ptbits[11] xor ul[0] xor ul[2] xor ur[0] xor ur[2] == 0)
                     counts[(kl << 4 | kr)].count++;
             }
     }
 
     sort(counts, counts + 256, sort_counts);
 
-    cout << "Guessing: ";
-    print_binary(cout, counts[0].kl);
-    cout << " ";
-    print_binary(cout, counts[0].kr);
-    cout << endl;
+    for (int i = 0; i < 10; i++) {
+        print_binary(cout, counts[i].kl);
+        cout << " ";
+        print_binary(cout, counts[i].kr);
+        cout << " " << counts[i].count << endl;
+    }
 
     return 0;
 }

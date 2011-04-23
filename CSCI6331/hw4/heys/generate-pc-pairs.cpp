@@ -18,7 +18,7 @@ static uint8_t *dec_pbox = enc_pbox;
 static uint8_t dec_sbox[16] = {0xe, 3, 4, 8, 1, 0xc, 0xa, 0xf, 7, 0xd, 9, 6, 0xb, 2, 0, 5};
 
 void print_binary(ostream &out, uint16_t num) {
-    for (int j = 15; j >= 0; j--) {
+    for (int j = 3; j >= 0; j--) {
         out << (num >> j & 1);
         if (j % 4 == 0)
             out << " ";
@@ -86,8 +86,9 @@ int main() {
             out << block << " " << encrypted << endl;
     }
 
-    cout << "Try to guess key bits in: ";
-    print_binary(cout, enc_keys[4]);
+    cout << "Try to guess these key bits: ";
+    print_binary(cout, enc_keys[4] >> 8 & 15);
+    print_binary(cout, enc_keys[4] & 15);
     cout << endl;
 
     return 0;

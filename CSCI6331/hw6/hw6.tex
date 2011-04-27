@@ -1,0 +1,107 @@
+\documentclass{amsart}
+
+\title{Homework 6}
+\author{James Lee\\
+\texttt{jameslee@gwu.edu}}
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+\item
+\begin{enumerate}
+\item Show $P(m|E_k(m)) \ne P(m)$.
+
+Suppose $P(m|E_k(m)) = P(m)$.  Then by Bayes' Theorem:
+
+$$
+\frac{P(E_k(m)|m)p(m)}{P(E_k(m))}=P(m)
+$$
+\\
+This is equal when $P(E_k(m)|m)=P(E_k(m))$.  Given $m$ and the known public key, $K$, we can determine $E_k(m)$ with probability 1.
+
+On the right side, we don't know $m$ so the probability is a function of the size fo the message space, which is not 1 since we know the system is not trivial.  So our original supposition that $P(m|E_k(m)) = P(m)$ cannot be true.
+
+\item Show $P(\hat{K}|K) \ne P(\hat{K})$.
+
+Suppose $P(\hat{K}|K) = P(\hat{K})$.  This is like supposing $P(E_{\hat{K}}(m)|E_K(m))=P(E_{\hat{K}}(m))$ for any $m$.  Then, like part (a), by Bayes' Theorem, we have to show $P(E_K(m)|E_{\hat{K}}(m))=P(E_K(m))$.
+
+Given the ``signed'' message, $E_{\hat{K}}(m)$, anyone can check the signature by encrypting with the public key: $E_K(m)$.  So $P(E_K(m)|E_{\hat{K}}(m)) = 1$.
+
+Without knowing $E_{\hat{K}}(m)$, $E_K(m)$ could be anything depending on the unknown input $m$, so both sides are not equal, and our original supposition is not true.
+\end{enumerate}
+
+\item
+\begin{align*}
+C_i&=m^{e_i}\mod n\\
+C_j&=m^{e_j}\mod n
+\end{align*}
+\\
+We know there is some $s$ and $t$ such that $se_i+te_j=1$ so:
+
+\begin{align*}
+m&=m^{se_i+te_j}&\mod n\\
+m&=(m^{e_i})^{(s-1)e_i+te_j}&\mod n\\
+m&=C_i^{(s-1)e_i+te_j}&\mod n
+\end{align*}
+\\
+And similarly for substituting $C_j$: $m=C_j^{se_i+(t-1)e_j}\mod n$.
+\\
+As an example, suppose $p=3, q=5, n=15, \phi=8, e_i=7, e_j=5, m=3$.  Then:
+
+\begin{align*}
+C_i&=3^7\mod 15=12\\
+C_j&=3^5\mod 15=3\\
+\end{align*}
+
+We can find $s=-7=8\mod 15$ and $t=10\mod 15$ programattically such that $se_i+te_j=1$.  Then substituting, we can find the original message:
+
+\begin{align*}
+C_i^{(8-1)(7)+(10)(5)}\mod 15=12^{99}\mod 15=3=m\\
+C_j^{(8)(7)+(10-1)(5)}\mod 15=3^{101}\mod 15=3=m
+\end{align*}
+
+\item If we have two ciphertexts, $c_1, c_2$, generated from two different messages, $m, m^\prime$, multiplied by the same random number, $s$, and one of the messages is known, then we can determine the other message:
+
+\begin{align*}
+c_1&=ms\\
+c_2&=m^\prime s
+\end{align*}
+
+$s$ can be discovered by multiplying $c_1$ by $m^{-1}$:
+
+$$
+m^{-1}c_1=m^{-1}(ms)=s
+$$
+
+$c_2$ can then be multiplied by $s^{-1}$ to get $m^\prime$:
+
+$$
+s^{-1}c_2=s^{-1}(m^\prime s)=m^\prime
+$$
+
+(All operations are mod the size of the multiplicative group.)
+\item
+\begin{description}
+\item[RSA]
+\begin{align*}
+c&=m^a&\mod n\\
+c^\prime&=m^{\prime a}&\mod n
+\end{align*}
+Mods can be taken at any time so:
+\begin{align*}
+cc^\prime&=(m^a\mod n)(m^{\prime a}\mod n)\\
+&=m^a m^{\prime a}\mod n\\
+&=(mm^\prime)^a\mod n
+\end{align*}
+\item[ElGamal]
+\begin{align*}
+c&=ms\\
+c^\prime&=m^\prime s\\
+cc^\prime&=(ms)(m^\prime s)
+\end{align*}
+\end{description}
+
+This is a problem because an attacker can use the multiplicative property in a chosen plaintext attach whereby he encrypts a ciphertext, $c$, multiplied by another value, $d$ and asks for the owner of the private key to decript the new innocuous ciphertext.  This will give the attacher access to the original message, $m$, multiplied by $d$, which can be inverted to leave $m$ by itself.
+\end{enumerate}
+\end{document}

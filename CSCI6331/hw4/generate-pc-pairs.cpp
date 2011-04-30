@@ -71,14 +71,15 @@ int main() {
     ofstream out("pc-pairs.txt");
 
     for (int i = 0; i < 5; i++)
-        enc_keys[i] = (uint32_t) random();
+        enc_keys[i] = 0;
+    enc_keys[4] = (uint32_t) random();
 
     dec_keys[0] = enc_keys[4];
     dec_keys[4] = enc_keys[0];
     for (int i = 1; i < 4; i++)
         dec_keys[i] = permute(enc_keys[4 - i], dec_pbox);
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 5000; i++) {
         uint32_t block = random();
         uint32_t encrypted = encrypt(block);
         uint32_t decrypted = decrypt(encrypted);
@@ -87,6 +88,7 @@ int main() {
     }
 
     cout << "Try to guess these key bits: ";
+    print_binary(cout, enc_keys[4] >> 4 & 15);
     print_binary(cout, enc_keys[4] & 15);
     cout << endl;
 

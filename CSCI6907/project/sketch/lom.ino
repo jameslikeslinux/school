@@ -35,9 +35,28 @@ struct ring_buffer {
     unsigned int tail;
 };
 
-static volatile ring_buffer rxbuffer = { { 0 }, 0, 0 };
-static volatile ring_buffer txbuffer = { { 0 }, 0, 0 };
-static volatile uint16_t configureWord = BAUD_57600 | ENABLE_RX_AVAIL_INT;
+static volatile ring_buffer rxbuffer = {{0}, 0, 0};
+static volatile ring_buffer txbuffer = {{0}, 0, 0};
+static volatile uint16_t configureWord;
+
+void setup() {
+    Serial.begin(115200);
+
+    pinMode(10, OUTPUT);
+    digitalWrite(10, HIGH);
+
+    pinMode(SLAVE_SELECT, OUTPUT);
+    digitalWrite(SLAVE_SELECT, HIGH);
+
+    pinMode(INTERRUPT, INPUT);
+    digitalWrite(INTERRUPT, HIGH);
+    attachInterrupt(1, maxisr, LOW);
+
+    SPI.begin();
+
+    configureWord = BAUD_115200 | ENABLE_RX_AVAIL_INT;
+    maxconfigure();
+}
 
 inline bool enqueue(volatile ring_buffer *buffer, uint8_t b) {
     unsigned int i = (buffer->head + 1) % SERIAL_BUFFER_SIZE;
@@ -73,20 +92,7 @@ inline bool dequeue(volatile ring_buffer *buffer, uint8_t *b) {
     return true;
 }
 
-void setup() {
-    Serial.begin(57600);
-
-    pinMode(SLAVE_SELECT, OUTPUT);
-    digitalWrite(SLAVE_SELECT, HIGH);
-
-    pinMode(INTERRUPT, INPUT);
-    digitalWrite(INTERRUPT, HIGH);
-    attachInterrupt(1, maxisr, FALLING);
-
-    SPI.begin();
-}
-
-uint16_t maxtransfer(uint16_t word) {
+inline uint16_t maxtransfer(uint16_t word) {
     uint16_t receivedWord;
     
     digitalWrite(SLAVE_SELECT, LOW);
@@ -111,8 +117,10 @@ uint16_t maxconfigure() {
 
 bool maxgetbyte(uint8_t *b) {
     bool ret;
+    uint8_t sregsaved;
 
     // disable interrupts so my buffers don't get clobbered
+    sregsaved = SREG;
     noInterrupts();
 
     // if the rxbuffer is empty, it's possible I could have missed an
@@ -126,22 +134,25 @@ bool maxgetbyte(uint8_t *b) {
     // the user with the return code
     ret = dequeue(&rxbuffer, b);
 
-    // reenable interrupts
-    interrupts();
+    // restore interrupts
+    SREG = sregsaved;
 
     return ret;
 }
 
 bool maxputbyte(uint8_t b) {
+    uint8_t sregsaved;
+
     // disable interrupts so my buffers don't get clobbered
+    sregsaved = SREG;
     noInterrupts();
 
     // if my txbuffer is full I can't add the byte to it, and I have no chance
     // of it clearing out because the rxbuffer needs to have room to do so
     // so I'm just going to refuse this byte
     if (isfull(&rxbuffer) && isfull(&txbuffer)) {
-        // reenable interrupts and return
-        interrupts();
+        // restore interrupts and return
+        SREG = sregsaved;
         return false;
     }
 
@@ -164,10 +175,10 @@ bool maxputbyte(uint8_t b) {
     // from the datasheet:
     //   IRQ is asserted low if TM = 1 and the transmit buffer becomes empty.
     // XXX: This may not be the most efficient thing
-    maxisr();
-
-    // reenable interrupts
-    interrupts();
+    //maxisr();
+    
+    // restore interrupts
+    SREG = sregsaved;
    
     return true;
 }
@@ -175,8 +186,10 @@ bool maxputbyte(uint8_t b) {
 /* XXX: Evaluate the need for this function
 bool maxavailable() {
     bool ret;
+    uint8_t sregsaved;
 
-    // disable interrupts so my rxbuffer won't change as I'm checking
+    // disable interrupts so my buffers don't get clobbered
+    sregsaved = SREG;
     noInterrupts();
 
     // if the rxbuffer is empty, it's possible I could have missed an
@@ -187,8 +200,8 @@ bool maxavailable() {
 
     ret = !isempty(&rxbuffer);
 
-    // reenable interrupts
-    interrupts();
+    // restore interrupts
+    SREG = sregsaved;
 
     return ret;
 }
@@ -249,6 +262,7 @@ void maxisr() {
 }
 
 void loop() {
+    int avail;
     uint8_t b, c;
 
     // if there's data in the rxbuffer
@@ -258,7 +272,7 @@ void loop() {
     }
 
     // if there's data available in the debug serial port
-    while (Serial.available() > 0) {
+    while ((avail = Serial.available()) > 0) {
         b = Serial.read();
 
         // then try to write a byte of it out the maxim serial port

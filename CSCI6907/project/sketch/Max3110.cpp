@@ -44,6 +44,10 @@ static const int MAX3110_NUM_INSTANCES = 1;
 static Max3110 *MAX3110_INSTANCES[] = {&ExternalSerial};
 
 void max3110ISR() {
+    if (digitalRead(10) == LOW) {
+        return;
+    }
+
     for (int i = 0; i < MAX3110_NUM_INSTANCES; i++) {
 //        if (digitalRead(MAX3110_INSTANCES[i]->interruptPin) == LOW) {
             MAX3110_INSTANCES[i]->sendAndReceiveData();
@@ -66,7 +70,7 @@ Max3110::Max3110(uint8_t ssPin, uint8_t interruptPin, uint8_t interruptNum) : rx
     // setup interrupt
     pinMode(interruptPin, INPUT);
     digitalWrite(interruptPin, HIGH);
-    attachInterrupt(interruptNum, max3110ISR, FALLING);
+    attachInterrupt(interruptNum, max3110ISR, LOW);
 
     // enter shutdown state
     end();
@@ -94,7 +98,7 @@ void Max3110::begin(unsigned long baud) {
     configure();
 
     // XXX: How much do i need to delay?
-    delay(1000);
+//    delay(1000);
 }
 
 void Max3110::end() {

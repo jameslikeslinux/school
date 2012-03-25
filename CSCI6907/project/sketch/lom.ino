@@ -1,88 +1,111 @@
-/*
- Chat  Server
- 
- A simple server that distributes any incoming messages to all
- connected clients.  To use telnet to  your device's IP address and type.
- You can see the client's input in the serial monitor as well.
- Using an Arduino Wiznet Ethernet shield. 
- 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
- 
- created 18 Dec 2009
- by David A. Mellis
- modified 10 August 2010
- by Tom Igoe
- 
- */
-
 #include <SPI.h>
 #include <Ethernet.h>
+#include <avr/pgmspace.h>
 #include "Max3110.h"
+#include "Cli.h"
 
-// Enter a MAC address and IP address for your controller below.
-// The IP address will be dependent on your local network.
-// gateway and subnet are optional:
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192,168,1, 99);
-IPAddress gateway(192,168,1, 1);
-IPAddress subnet(255, 255, 255, 0);
+static byte mac[] = {0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed};
+static IPAddress ip(192, 168, 1, 99);
+static IPAddress gateway(192, 168, 1, 1);
+static IPAddress subnet(255, 255, 255, 0);
 
-// telnet defaults to port 23
-EthernetServer server(22);
-boolean gotAMessage = false; // whether or not you got a message from the client yet
+// rlogin defaults to port 513
+static EthernetServer server(513);
+static EthernetClient client;
 
-void setup() {
-  // initialize the ethernet device
-  Ethernet.begin(mac, ip, gateway, subnet);
-  // start listening for clients
-  server.begin();
-  // open the serial port
-  Serial.begin(38400);
-  ExternalSerial.begin(38400);
-}
+static prog_char *console_help PROGMEM = "console\n - Access the serial console of the system";
+static int _console(int argc, char *argv[]) {
+    char c;
+    bool hashPressed;
 
-static unsigned long i = 0;
-#define PROG 4
-
-void loop() {
-#if PROG == 0
-    int b;
-  // wait for a new client:
-  EthernetClient client = server.available();
-  
-  // when the client sends the first byte, say hello:
-//  if (client) {
-//    if (!gotAMessage) {
-//      ExternalSerial.println("We have a new client");
-//      client.println("Hello, client!"); 
-//      gotAMessage = true;
-//    }
+    hashPressed = false;
+    client.println("Press #. to exit console.");
+    
+    ExternalSerial.begin(9600);
 
     while (client.connected()) {
-        if ((b = client.read()) != -1) {
-            ExternalSerial.write(b);
+        if (client.available()) {
+            c = client.read();
+
+            if (!hashPressed && c == '#') {
+                hashPressed = true;
+            } else if (hashPressed && c == '.') {
+                client.println();
+                break;
+            } else {
+                hashPressed = false;
+            }
+
+            ExternalSerial.write(c);
+        }
+
+        if (ExternalSerial.available()) {
+            c = ExternalSerial.read();
+            client.write(c);
         }
     }
-//  }
-#elif PROG == 1
-    int b;
-    if ((b = Serial.read()) != -1) {
-        ExternalSerial.write(b);
-    }
+    
+    ExternalSerial.end();
 
-    if ((b = ExternalSerial.read()) != -1) {
-        Serial.write(b);
-    }
-#elif PROG == 2
-    int b;
-    if ((b = ExternalSerial.read()) != -1) {
-        ExternalSerial.write(b);
-    }
-#else
-    ExternalSerial.print("Hello, World! ");
-    ExternalSerial.println(i++);
-//    delay(1000);
-#endif
+    return 0;
+}
+
+static prog_char *help_help PROGMEM = "help\n - Prints a list of available commands";
+static int _help(int argc, char *argv[]) {
+    client.println("This is the help");
+
+    return 0;
+}
+
+static prog_char *exit_help PROGMEM = "exit\n - Disconnect from the LOM";
+static int _exit(int argc, char *argv[]) {
+    client.stop();
+    return 0;
+}
+
+void setup() {
+    // open the serial port for debugging
+    Serial.begin(9600);
+    
+    // initialize the ethernet device
+    Ethernet.begin(mac, ip, gateway, subnet);
+
+    // start listening for clients
+    server.begin();
+
+    Cli::addCommand("console", console_help, _console);
+    Cli::addCommand("help", help_help, _help);
+    Cli::addCommand("exit", exit_help, _exit);
+}
+
+void loop() {
+    char c;
+    int count;
+
+    if (client = server.available()) {
+        count = 0;
+        
+        while (client.connected()) {
+            if (client.available()) {
+                c = client.read();
+
+                if (c == 0) {
+                    Serial.println();
+                    if (++count == 4) {
+                        client.write((uint8_t) 0);
+                        break;
+                    }
+                } else {
+                    Serial.print(c);
+                }
+            }
+        }
+
+        Serial.println("Connection established.");
+
+        Cli cl(&client);
+        cl.go();
+
+        Serial.println("Connection ended.");
+    }    
 }

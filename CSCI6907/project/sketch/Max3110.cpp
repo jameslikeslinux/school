@@ -2,11 +2,13 @@
 #include <SPI.h>
 #include "Max3110.h"
 
-#define STRIP_RT (~((1 << 15) | (1 << 14)))
+// commands
 #define WRITE_CONF ((1 << 15) | (1 << 14))
 #define READ_CONF (1 << 14)
 #define READ_DATA 0
 #define WRITE_DATA (1 << 15)
+
+// for WRITE_CONF command
 #define DISABLE_FIFO (1 << 13)
 #define SOFTWARE_SHUTDOWN (1 << 12)
 #define ENABLE_TX_BUF_INT (1 << 11)
@@ -17,6 +19,17 @@
 #define TWO_STOPS (1 << 6)
 #define ENABLE_PARITY (1 << 5)
 #define SEVEN_BIT (1 << 4)
+
+// for WRITE_DATA command
+#define TRANSMIT_DISABLE (1 << 10)
+
+// returned from WRITE_DATA and READ_DATA commands
+#define READY_TO_RECEIVE (1 << 9)
+
+// returned from every command
+#define DATA_RECEIVED (1 << 15)
+#define TRANSMIT_BUFFER_EMPTY (1 << 14)
+#define STRIP_RT (~(DATA_RECEIVED | TRANSMIT_BUFFER_EMPTY))
 
 static const int MAX3110_NUM_BAUDS = 16;
 static const unsigned long MAX3110_BAUDS[] = {
@@ -38,27 +51,29 @@ static const unsigned long MAX3110_BAUDS[] = {
     600
 };
 
-Max3110 ExternalSerial(4, 3, 1);
+Max3110 ExternalSerial(4, 5, 3, 1);
 
 static const int MAX3110_NUM_INSTANCES = 1;
 static Max3110 *MAX3110_INSTANCES[] = {&ExternalSerial};
 
 void max3110ISR() {
+    // can't process interrupt if something else is talking on SPI bus
+    // XXX: SS pin shouldn't be hardcoded
     if (digitalRead(10) == LOW) {
         return;
     }
 
     for (int i = 0; i < MAX3110_NUM_INSTANCES; i++) {
-//        if (digitalRead(MAX3110_INSTANCES[i]->interruptPin) == LOW) {
-            MAX3110_INSTANCES[i]->sendAndReceiveData();
-//        }
+        MAX3110_INSTANCES[i]->receiveData();
     }
 }
 
-Max3110::Max3110(uint8_t ssPin, uint8_t interruptPin, uint8_t interruptNum) : rxBuffer(64), txBuffer(64) {
+Max3110::Max3110(uint8_t ssPin, uint8_t shutdownPin, uint8_t interruptPin, uint8_t interruptNum) : rxBuffer(64) {
     this->ssPin = ssPin;
+    this->shutdownPin = shutdownPin;
     this->interruptPin = interruptPin;
     this->configurationWord = 0;
+    this->rtrState = 0;
 
     // setup slave select pin
     pinMode(ssPin, OUTPUT);
@@ -89,7 +104,8 @@ void Max3110::begin(unsigned long baud) {
         return;
     }
 
-    // XXX: start transceivers
+    // start transceivers
+    digitalWrite(this->shutdownPin, HIGH);
 
     // set baud rate, enable rx interrupts, and exit software shutdown
     this->configurationWord |= baudConfiguration;
@@ -97,8 +113,9 @@ void Max3110::begin(unsigned long baud) {
     this->configurationWord &= ~SOFTWARE_SHUTDOWN;
     configure();
 
-    // XXX: How much do i need to delay?
-//    delay(1000);
+    // for now, just assert ready to receive
+    //this->rtrState |= READY_TO_RECEIVE;
+    //transfer(WRITE_DATA | TRANSMIT_DISABLE | this->rtrState);
 }
 
 void Max3110::end() {
@@ -106,65 +123,43 @@ void Max3110::end() {
     this->configurationWord |= SOFTWARE_SHUTDOWN;
     configure();
 
-    // XXX: shutdown transceivers
+    // shutdown transceivers
+    digitalWrite(this->shutdownPin, LOW);
 
     // clear buffers
     this->rxBuffer.clear();
-    this->txBuffer.clear();
 }
 
 size_t Max3110::write(uint8_t b) {
     uint8_t sregsaved;
     uint16_t readword;
-    int i = 0;
 
     // disable interrupts so my buffers don't get clobbered
     sregsaved = SREG;
     noInterrupts();
 
-    while (!((transfer(READ_CONF) >> 14) & 1));
- 
-    readword = transfer(WRITE_DATA | b);
-    
-    // store any received data that might have come back
-    if ((readword >> 15) & 1) {
-        this->rxBuffer.enqueue(readword);
-    }
-
-    // XXX: big hack
-    //delay(1000);
-/*
-    // if my txbuffer is full I can't add the byte to it, and I have no chance
-    // of it clearing out because the rxbuffer needs to have room to do so
-    // so I'm just going to refuse this byte
-    if (this->rxBuffer.isFull() && this->txBuffer.isFull()) {
+    if (this->rxBuffer.isFull()) {
         // restore interrupts and return
         SREG = sregsaved;
         return 0;
     }
 
-    // if just the txbuffer is full I might have missed an interrupt
-    // so just try forcing some transfers until there room in the buffer
-    while (!this->txBuffer.enqueue(b)) {
-        sendAndReceiveData();
+    // wait until the other host is ready to receive and the transmit buffer is empty
+    //do {
+    //    readword = transfer(WRITE_DATA | TRANSMIT_DISABLE | this->rtrState);
+    //} while (!((readword & READY_TO_RECEIVE) && (readword & TRANSMIT_BUFFER_EMPTY)));
+    do {
+        readword = transfer(WRITE_DATA | TRANSMIT_DISABLE);
+    } while (!(readword & TRANSMIT_BUFFER_EMPTY));
+ 
+    //readword = transfer(WRITE_DATA | b | this->rtrState);
+    readword = transfer(WRITE_DATA | b);
+    
+    // store any received data that might have come back
+    if (readword & DATA_RECEIVED) {
+        this->rxBuffer.enqueue(readword);
     }
 
-    // now my txbuffer has data so I want to be interrupted when the UART
-    // is able to accept more transfers
-    this->configurationWord &= ~ENABLE_RX_AVAIL_INT;
-    this->configurationWord |= ENABLE_TX_BUF_INT;
-    configure();
-   
-    // that said, the interrupt seems to only trigger when the hw transmit
-    // buffer *becomes* empty--if it's already empty when the interrupt
-    // is enabled, it doesn't fire...so I have to manually call the interrupt
-    // or bits can get stuck sometimes
-    //
-    // from the datasheet:
-    //   IRQ is asserted low if TM = 1 and the transmit buffer becomes empty.
-    // XXX: This may not be the most efficient thing
-    //sendAndReceiveData();
-*/
     // restore interrupts
     SREG = sregsaved;
 
@@ -182,7 +177,7 @@ int Max3110::available() {
     // if the rxbuffer is empty, it's possible I could have missed an
     // interrupt, so why not go out and get some data
     if (this->rxBuffer.isEmpty()) {
-        sendAndReceiveData();
+        receiveData();
     }
 
     ret = this->rxBuffer.available();
@@ -204,7 +199,7 @@ int Max3110::read() {
     // if the rxbuffer is empty, it's possible I could have missed an
     // interrupt, so why not go out and get some data
     if (this->rxBuffer.isEmpty()) {
-        sendAndReceiveData();
+        receiveData();
     }
 
     // if rxbuffer was empty and the UART still didn't receive any data, this
@@ -233,7 +228,7 @@ int Max3110::peek() {
     // if the rxbuffer is empty, it's possible I could have missed an
     // interrupt, so why not go out and get some data
     if (this->rxBuffer.isEmpty()) {
-        sendAndReceiveData();
+        receiveData();
     }
 
     // if rxbuffer was empty and the UART still didn't receive any data, this
@@ -252,21 +247,9 @@ int Max3110::peek() {
 }
 
 void Max3110::flush() {
-    uint8_t sregsaved;
-
-    // disable interrupts so my buffers don't get clobbered
-    sregsaved = SREG;
-    noInterrupts();
-
-    // force sending data until txBuffer is empty or rxBuffer is full
-    while (!this->rxBuffer.isFull() && !this->txBuffer.isEmpty()) {
-        sendAndReceiveData();
-    }
-    
-    // restore interrupts
-    SREG = sregsaved;
+    // do nothing...there is no txbuffer to flush
 }
-        
+
 uint16_t Max3110::transfer(uint16_t word) {
     uint16_t receivedWord;
   
@@ -278,6 +261,26 @@ uint16_t Max3110::transfer(uint16_t word) {
     return receivedWord;
 }
 
+/*
+ * Stubs for hardware flow control...doesn't work perfectly...timing seems to be critical
+ *
+
+uint16_t Max3110::transfer(uint16_t word) {
+    uint16_t receivedWord;
+ 
+    receivedWord = transfer1(word);
+    if (receivedWord & DATA_RECEIVED && this->rtrState & READY_TO_RECEIVE) {
+        this->rtrState &= ~READY_TO_RECEIVE;
+        transfer1(WRITE_DATA | TRANSMIT_DISABLE | this->rtrState);
+    } else if ((!(receivedWord & DATA_RECEIVED)) && (!(this->rtrState & READY_TO_RECEIVE)) && this->rxBuffer.isEmpty()) {
+        this->rtrState |= READY_TO_RECEIVE;
+        transfer1(WRITE_DATA | TRANSMIT_DISABLE | this->rtrState);
+    }
+    
+    return receivedWord;
+}
+*/
+
 void Max3110::configure() {
     uint16_t receivedWord;
 
@@ -287,71 +290,23 @@ void Max3110::configure() {
     } while (this->configurationWord != receivedWord);
 }
 
-void Max3110::sendAndReceiveData() {
-    uint8_t b;
+void Max3110::receiveData() {
     uint16_t readword;
-
-    if (this->rxBuffer.isFull()) {
-        return;
-    }
-
-    readword = transfer(READ_DATA);
-
-    if ((readword >> 15) & 1) {
-        // we got data from the UART and I know I can enqueue it because
-        // I checked above and nothing between then and now could have
-        // added anything else to the rxbuffer
-        this->rxBuffer.enqueue(readword);
-    }
-/*
-    //do {
-        // if the receive buffer is full, there's nothing else we can do
-        // we can continue to let the hardware FIFO fill and hope the user
-        // clears out the rxbuffer before bytes start needing to be dropped
+    
+    while (true) {
         if (this->rxBuffer.isFull()) {
             return;
         }
-
+    
         readword = transfer(READ_DATA);
 
-        if ((readword >> 15) & 1) {
+        if (readword & DATA_RECEIVED) {
             // we got data from the UART and I know I can enqueue it because
             // I checked above and nothing between then and now could have
             // added anything else to the rxbuffer
             this->rxBuffer.enqueue(readword);
+        } else {
+            break;
         }
-
-        if (((readword >> 14) & 1) && !this->txBuffer.isEmpty()) {
-            // if the UART is able to accept tx, but the receive buffer is now full
-            // then, again we can't do anything because a receive can come back with
-            // the transmit request and we wouldn't have any place to put it.
-            if (this->rxBuffer.isFull()) {
-                return;
-            }
-
-            // this dequeue must return data because I checked above and nothing
-            // else could have modified txbuffer between then and now
-            this->txBuffer.dequeue(b);
-
-            readword = transfer(WRITE_DATA | b);
-            if ((readword >> 15) & 1) {
-                // we got data from the UART and I know I can enqueue it because
-                // I checked above and nothing between then and now could have
-                // added anything else to the rxbuffer
-                this->rxBuffer.enqueue(readword);
-            }
-            
-            // if that was the last byte in queue to be transferred
-            // then I don't need to be interrupted about the tx buffer anymore
-            if (this->txBuffer.isEmpty()) {
-                this->configurationWord &= ~ENABLE_TX_BUF_INT;
-                this->configurationWord |= ENABLE_RX_AVAIL_INT;
-                configure();
-            }
-        }
-
-    // and repeat the above as long as the interrupt condition remains and
-    // I'm able to accept new data
-    //} while (digitalRead(this->interruptPin) == LOW);
-*/
+    }
 }

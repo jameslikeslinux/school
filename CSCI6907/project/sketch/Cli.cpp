@@ -7,7 +7,70 @@
 #define CLI_MAX_CMD_TOKENS 33
 static const char *CLI_PROMPT = "> ";
 
-static bool cliTokenizeCommand(char *cmd, int *argc, char *argv[]) {
+
+// initialize commands with zeros
+Cmd Cli::commands[] = {0};
+
+Cli::Cli(EthernetClient *client) : cmdqueue(4) {
+    this->client = client;
+}
+
+bool Cli::addCommand(char *name, prog_char *help, int (*cmdfunc)(const Cli *cl, int argc, char *argv[])) {
+    // check whether the command already exists
+    for (int i = 0; i < CLI_MAX_NUM_CMDS; i++) {
+        if (Cli::commands[i].isValid && !strcmp(Cli::commands[i].name, name)) {
+            Serial.print("Command '");
+            Serial.print(name);
+            Serial.println("' already exists.");
+            return false;
+        }
+    }
+
+    // find an invalid slot and fill it
+    for (int i = 0; i < CLI_MAX_NUM_CMDS; i++) {
+        if (!Cli::commands[i].isValid) {
+            Cli::commands[i].cmdfunc = cmdfunc;
+            Cli::commands[i].name = name;
+            Cli::commands[i].help = help;
+            Cli::commands[i].isValid = true;
+            return true;
+        }
+    }
+
+    // failed to find a command slot
+    return false;
+}
+
+void Cli::go() {
+    this->input = NULL;
+
+    while (this->client->connected()) {
+        this->processInput();
+        this->processCommands();
+    }
+}
+        
+EthernetClient * Cli::getClient() const {
+    return this->client;
+}
+
+void Cli::showHelp() const {
+    this->client->println();
+
+    for (int i = 0; i < CLI_MAX_NUM_CMDS; i++) {
+        if (Cli::commands[i].isValid) {
+            this->showHelp(Cli::commands[i]);
+        }
+    }
+            
+    this->client->println();
+}
+
+void Cli::showHelp(const Cmd &command) const {
+    this->client->println(command.help);
+}
+
+bool Cli::tokenizeCommand(char *cmd, int *argc, char *argv[]) {
     bool inquote;
     char *cmdtok;
 
@@ -73,48 +136,6 @@ static bool cliTokenizeCommand(char *cmd, int *argc, char *argv[]) {
     return true;
 }
 
-// initialize commands with zeros
-Cmd Cli::commands[] = {0};
-
-Cli::Cli(EthernetClient *client) : cmdqueue(4) {
-    this->client = client;
-}
-
-void Cli::go() {
-    this->input = NULL;
-
-    while (this->client->connected()) {
-        this->processInput();
-        this->processCommands();
-    }
-}
-
-bool Cli::addCommand(char *name, prog_char *help, int (*cmdfunc)(int argc, char *argv[])) {
-    // check whether the command already exists
-    for (int i = 0; i < CLI_MAX_NUM_CMDS; i++) {
-        if (Cli::commands[i].isValid && !strcmp(Cli::commands[i].name, name)) {
-            Serial.print("Command '");
-            Serial.print(name);
-            Serial.println("' already exists.");
-            return false;
-        }
-    }
-
-    // find an invalid slot and fill it
-    for (int i = 0; i < CLI_MAX_NUM_CMDS; i++) {
-        if (!Cli::commands[i].isValid) {
-            Cli::commands[i].cmdfunc = cmdfunc;
-            Cli::commands[i].name = name;
-            Cli::commands[i].help = help;
-            Cli::commands[i].isValid = true;
-            return true;
-        }
-    }
-
-    // failed to find a command slot
-    return false;
-}
-
 void Cli::processInput() {
     char c;
 
@@ -175,7 +196,7 @@ void Cli::processCommands() {
     while (this->cmdqueue.dequeue(cmd)) {
         argc = 0;
 
-        if (cliTokenizeCommand(cmd, &argc, argv)) {
+        if (Cli::tokenizeCommand(cmd, &argc, argv)) {
             if (argc > 0) {
                 cmdFound = false;
 
@@ -183,8 +204,11 @@ void Cli::processCommands() {
                     if (Cli::commands[i].isValid && !strcmp(Cli::commands[i].name, argv[0])) {
                         cmdFound = true;
 
-                        // XXX: Check return value
-                        Cli::commands[i].cmdfunc(argc, argv);
+                        if (Cli::commands[i].cmdfunc(this, argc, argv) == CMD_SHOW_HELP) {
+                            this->client->println();
+                            this->showHelp(Cli::commands[i]);
+                            this->client->println();
+                        }
 
                         break;
                     }

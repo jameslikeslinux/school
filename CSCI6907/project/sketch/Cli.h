@@ -6,10 +6,16 @@
 #include <Ethernet.h>
 #include "RingBuffer.h"
 
-#define CLI_MAX_NUM_CMDS 8
+#define CLI_MAX_NUM_CMDS 10
+
+#define CMD_SUCCESS 0
+#define CMD_SHOW_HELP 1
+#define CMD_ERROR 2
+
+class Cli;
 
 struct Cmd {
-    int (*cmdfunc)(int argc, char *argv[]);
+    int (*cmdfunc)(const Cli *cl, int argc, char *argv[]);
     char *name;
     prog_char *help;
     bool isValid;
@@ -18,12 +24,16 @@ struct Cmd {
 class Cli {
     public:
         Cli(EthernetClient *client);
+        static bool addCommand(char *name, prog_char *help, int (*cmdfunc)(const Cli *cl, int argc, char *argv[]));
         void go();
-        static bool addCommand(char *name, prog_char *help, int (*cmdfunc)(int argc, char *argv[]));
+        EthernetClient * getClient() const;
+        void showHelp() const;
 
     private:
+        static bool tokenizeCommand(char *cmd, int *argc, char *argv[]);
         void processInput();
         void processCommands();
+        void showHelp(const Cmd &command) const;
 
         EthernetClient *client;
         RingBuffer<char *> cmdqueue;

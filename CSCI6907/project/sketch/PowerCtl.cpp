@@ -3,7 +3,7 @@
 
 #define POWERCTL_TIMEOUT 10000  // 10 seconds
 
-PowerCtlClass PowerCtl(8, 6);
+PowerCtlClass PowerCtl(6, 9);
 
 PowerCtlClass::PowerCtlClass(uint8_t ledPin, uint8_t powerPin) {
     this->ledPin = ledPin;
